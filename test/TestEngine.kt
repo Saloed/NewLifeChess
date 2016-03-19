@@ -2,13 +2,10 @@ import core.BitBoard
 import core.moves.MoveGenerator
 import core.moves.PawnCaptureGenerator
 import core.moves.PawnMoveGenerator
-import core.moves.PieceMoveGenerator
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import uci.FENParser
-
-import java.util.ArrayList
-
-import org.junit.Assert.assertEquals
+import java.util.*
 
 class TestEngine {
     @Test

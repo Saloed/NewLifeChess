@@ -10,7 +10,7 @@ import java.util.*
 
 class MoveGenerator(private val bitBoard: BitBoard) : Iterator<BitBoardMove> {
 
-    private lateinit  var generators: List<PieceMoveGenerator>
+    private lateinit var generators: List<PieceMoveGenerator>
     private val queuedMoves = ArrayList<BitBoardMove>()
     private var genIndex = 0
     private val inCheck: Boolean
@@ -61,7 +61,7 @@ class MoveGenerator(private val bitBoard: BitBoard) : Iterator<BitBoardMove> {
 
 
     private fun populateMoves() {
-        if (genIndex >= generators!!.size) {
+        if (genIndex >= generators.size) {
             return
         }
 
@@ -69,10 +69,10 @@ class MoveGenerator(private val bitBoard: BitBoard) : Iterator<BitBoardMove> {
             return
         }
 
-        val nextGen = generators!![genIndex++]
+        val nextGen = generators[genIndex++]
         nextGen.generateMoves(bitBoard, inCheck, potentialPins, queuedMoves)
 
-        if (queuedMoves.size == 0 && genIndex < generators!!.size) {
+        if (queuedMoves.size == 0 && genIndex < generators.size) {
             populateMoves()
         }
     }
@@ -93,7 +93,7 @@ class MoveGenerator(private val bitBoard: BitBoard) : Iterator<BitBoardMove> {
         get() {
             val moves = ArrayList<BitBoardMove>()
 
-            for (generator in generators!!) {
+            for (generator in generators) {
                 generator.generateThreatMoves(bitBoard, inCheck, potentialPins, moves)
             }
 

@@ -120,7 +120,7 @@ object FENParser {
         for (rank in 7 downTo 0) {
             var file = 0
             for (j in 0..ranks[7 - rank].length - 1) {
-                val c = ranks[7 - rank].get(j)
+                val c = ranks[7 - rank][j]
                 when (c) {
                     'P' -> board.setPiece(file, rank, (Piece.PAWN or Piece.WHITE))
                     'p' -> board.setPiece(file, rank, (Piece.PAWN or Piece.BLACK))
@@ -149,7 +149,7 @@ object FENParser {
                 (if (fields[2].contains("q")) BitBoard.CASTLE_BQS else 0))
 
         if (fields[3].length == 2) {
-            board.enPassantFile = FILES.indexOf(fields[3].get(0))
+            board.enPassantFile = FILES.indexOf(fields[3][0])
         } else {
             board.enPassantFile = -1
         }

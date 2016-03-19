@@ -24,7 +24,7 @@ class KingSafetyEvaluator : PositionEvaluator {
         val king = bitBoard.getBitmapColor(color) and bitBoard.bitmapKings
         val mapIdx = java.lang.Long.numberOfTrailingZeros(king)
         val inFront = (KingMoveGenerator.KING_MOVES[mapIdx]
-        and BitBoard.getRankMap(mapIdx.ushr(3) + (if (color == Piece.WHITE) 1 else -1)) and bitBoard.getBitmapColor(color))
+                and BitBoard.getRankMap(mapIdx.ushr(3) + (if (color == Piece.WHITE) 1 else -1)) and bitBoard.getBitmapColor(color))
         //println(mapIdx)
         //println(java.lang.Long.toBinaryString(KingMoveGenerator.KING_MOVES[mapIdx]))
         //println(java.lang.Long.toBinaryString(inFront))

@@ -39,7 +39,7 @@ class BitBoard {
      * set a piece on a square.
      */
     fun setPiece(file: Int, rank: Int, piece: Int) {
-        val pos:Long = (1L shl (rank shl 3)) shl file
+        val pos: Long = (1L shl (rank shl 3)) shl file
         bitmaps[piece and Piece.MASK_TYPE] = bitmaps[piece and Piece.MASK_TYPE] or pos
         bitmaps[piece and Piece.MASK_COLOR] = bitmaps[piece and Piece.MASK_COLOR] or pos
         invalidateHistory()
@@ -300,27 +300,27 @@ class BitBoard {
         moveCount--
         player = player xor Piece.BLACK
 
-        if (lastMove!!.castle) {
+        if (lastMove.castle) {
             castle(lastMove)
-            this.flags = lastMove!!.flags
-            this.halfMoveCount = lastMove!!.halfMoveCount
-            this.lastMove = lastMove!!.previousMove
+            this.flags = lastMove.flags
+            this.halfMoveCount = lastMove.halfMoveCount
+            this.lastMove = lastMove.previousMove
             return
         }
 
-        if (lastMove!!.promote) {
-            bitmaps[lastMove!!.pieceIndex] = bitmaps[lastMove!!.pieceIndex] xor lastMove!!.toSquare
-            bitmaps[lastMove!!.promoteTo] = bitmaps[lastMove!!.promoteTo] xor lastMove!!.toSquare
+        if (lastMove.promote) {
+            bitmaps[lastMove.pieceIndex] = bitmaps[lastMove.pieceIndex] xor lastMove.toSquare
+            bitmaps[lastMove.promoteTo] = bitmaps[lastMove.promoteTo] xor lastMove.toSquare
         }
-        bitmaps[lastMove!!.pieceIndex] = bitmaps[lastMove!!.pieceIndex] xor lastMove!!.xorPattern
-        bitmaps[lastMove!!.colorIndex] = bitmaps[lastMove!!.colorIndex] xor lastMove!!.xorPattern
-        if (lastMove!!.isCapture) {
-            bitmaps[lastMove!!.captureType] = bitmaps[lastMove!!.captureType] xor lastMove!!.captureSquare
-            bitmaps[lastMove!!.colorIndex xor 0x08] = bitmaps[lastMove!!.colorIndex xor 0x08] xor lastMove!!.captureSquare
+        bitmaps[lastMove.pieceIndex] = bitmaps[lastMove.pieceIndex] xor lastMove.xorPattern
+        bitmaps[lastMove.colorIndex] = bitmaps[lastMove.colorIndex] xor lastMove.xorPattern
+        if (lastMove.isCapture) {
+            bitmaps[lastMove.captureType] = bitmaps[lastMove.captureType] xor lastMove.captureSquare
+            bitmaps[lastMove.colorIndex xor 0x08] = bitmaps[lastMove.colorIndex xor 0x08] xor lastMove.captureSquare
         }
-        this.flags = lastMove!!.flags
-        this.halfMoveCount = lastMove!!.halfMoveCount
-        this.lastMove = lastMove!!.previousMove
+        this.flags = lastMove.flags
+        this.halfMoveCount = lastMove.halfMoveCount
+        this.lastMove = lastMove.previousMove
     }
 
     val cacheId: String
@@ -513,7 +513,7 @@ class BitBoard {
         var halfMoveCount: Int = 0
         lateinit var previousMove: BitBoardMove
 
-        public constructor(castleDir: Int) {
+        constructor(castleDir: Int) {
             this.castle = true
             this.castleDir = castleDir
             if (castleDir == CASTLE_WKS || castleDir == CASTLE_WQS) {
@@ -523,7 +523,7 @@ class BitBoard {
             }
         }
 
-        public constructor(fromSquare: Long, toSquare: Long, colorIndex: Int, pieceIndex: Int) {
+        constructor(fromSquare: Long, toSquare: Long, colorIndex: Int, pieceIndex: Int) {
             this.fromSquare = fromSquare
             this.toSquare = toSquare
             this.colorIndex = colorIndex
@@ -544,7 +544,7 @@ class BitBoard {
             }
         }
 
-        public constructor(fromSquare: Long, toSquare: Long, colorIndex: Int, pieceIndex: Int, captureType: Int)
+        constructor(fromSquare: Long, toSquare: Long, colorIndex: Int, pieceIndex: Int, captureType: Int)
         : this(fromSquare, toSquare, colorIndex, pieceIndex) {
             this.captureType = captureType
             this.isCapture = true
@@ -564,10 +564,10 @@ class BitBoard {
                 var move = EngineHelper.toCoord(fromSquare) + EngineHelper.toCoord(toSquare)
                 if (promote) {
                     when (promoteTo) {
-                        Piece.QUEEN -> move = move + "=Q"
-                        Piece.ROOK -> move = move + "=R"
-                        Piece.BISHOP -> move = move + "=B"
-                        Piece.KNIGHT -> move = move + "=N"
+                        Piece.QUEEN -> move += "=Q"
+                        Piece.ROOK -> move += "=R"
+                        Piece.BISHOP -> move += "=B"
+                        Piece.KNIGHT -> move += "=N"
                     }
                 }
                 return move

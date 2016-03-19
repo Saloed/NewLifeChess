@@ -35,6 +35,6 @@ class QueenMoveGenerator : StraightMoveGenerator() {
         }
     }
 
-    protected override val pieceType: Int
+    override val pieceType: Int
         get() = Piece.QUEEN
 }
