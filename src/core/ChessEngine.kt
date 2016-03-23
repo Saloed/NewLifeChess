@@ -10,11 +10,16 @@ class ChessEngine {
     private val gameScorer: GameScorer
     var depth = DEPTH
     var scoreMargin = 1000
-    var maxDeepMoves = 6
-    private val quiesce = false
+    var maxDeepMoves = 5
+    private val quiesce = true
 
     constructor() {
         this.gameScorer = GameScorer.defaultScorer
+    }
+
+    constructor(depth: Int, qdepth: Int) : this() {
+        DEPTH = depth
+        Q_DEPTH = qdepth
     }
 
     constructor(gameScorer: GameScorer) {
@@ -194,14 +199,14 @@ class ChessEngine {
             return true
         }
 
-        override fun compareTo(o: ScoredMove): Int {
-            return score.compareTo(o.score)
+        override fun compareTo(other: ScoredMove): Int {
+            return score.compareTo(other.score)
         }
     }
 
     companion object {
-        private val DEPTH = 5
-        private val Q_DEPTH = 6
+        private var DEPTH = 5
+        private var Q_DEPTH = 2
 
         /**
          * Selects all moves sharing the lowest (i.e. best) score.

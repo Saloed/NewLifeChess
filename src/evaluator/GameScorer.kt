@@ -62,7 +62,7 @@ class GameScorer {
         }
 
         for (move in MoveGenerator(bitBoard).threateningMoves) {
-            println("Q:" + move.algebraic)
+            //println("Q:" + move.algebraic)
             bitBoard.makeMove(move)
             val score = -quiesce(bitBoard, -beta, -alpha, depth++)
             bitBoard.unmakeMove()
