@@ -11,7 +11,7 @@ class ChessEngine {
     var depth = DEPTH
     var scoreMargin = 1000
     var maxDeepMoves = 5
-    private val quiesce = true
+    private val quiesce = false
 
     constructor() {
         this.gameScorer = GameScorer.defaultScorer
@@ -101,10 +101,10 @@ class ChessEngine {
         if (depthLeft == 0 || !moveItr.hasNext()) {
             var rv: Int
             if (quiesce) {
-                if (!moveItr.hasNext()) {
-                    rv = gameScorer.score(bitBoard, false, alpha, beta)
-                } else {
+                if (moveItr.hasNext()) {
                     rv = alphaBetaMinQ(alpha, beta, 0, bitBoard)
+                } else {
+                    rv = gameScorer.score(bitBoard, false, alpha, beta)
                 }
             } else {
                 rv = gameScorer.score(bitBoard, false, alpha, beta)
@@ -137,10 +137,10 @@ class ChessEngine {
         if (depthLeft == 0 || !moveItr.hasNext()) {
             var rv: Int
             if (quiesce) {
-                if (!moveItr.hasNext()) {
-                    rv = gameScorer.score(bitBoard, false, alpha, beta)
-                } else {
+                if (moveItr.hasNext()) {
                     rv = alphaBetaMaxQ(alpha, beta, 0, bitBoard)
+                } else {
+                    rv = gameScorer.score(bitBoard, false, alpha, beta)
                 }
             } else {
                 rv = gameScorer.score(bitBoard, false, alpha, beta)
@@ -165,6 +165,35 @@ class ChessEngine {
         }
 
         return beta
+    }
+
+    companion object {
+        private var DEPTH = 5
+        private var Q_DEPTH = 2
+
+        /**
+         * Selects all moves sharing the lowest (i.e. best) score.
+         */
+        private fun selectBestMoves(allMoves: MutableList<ScoredMove>, margin: Int = 0, maxMoves: Int = 5): List<ScoredMove> {
+            if (allMoves.size == 0) {
+                return allMoves
+            }
+
+            Collections.sort(allMoves)
+            val bestScore = allMoves[0].score
+            while (allMoves.size > maxMoves || allMoves[allMoves.size - 1].score > bestScore + margin) {
+                allMoves.removeAt(allMoves.size - 1)
+            }
+            return allMoves
+        }
+
+        private fun selectBestMove(allMoves: MutableList<ScoredMove>): String? {
+            val bestMoves = selectBestMoves(allMoves)
+            if (bestMoves.size == 0) {
+                return null
+            }
+            return allMoves[(Math.random() * allMoves.size).toInt()].move
+        }
     }
 
     private class ScoredMove(var move: String?, var score: Int) : Comparable<ScoredMove> {
@@ -204,32 +233,5 @@ class ChessEngine {
         }
     }
 
-    companion object {
-        private var DEPTH = 5
-        private var Q_DEPTH = 2
 
-        /**
-         * Selects all moves sharing the lowest (i.e. best) score.
-         */
-        private fun selectBestMoves(allMoves: MutableList<ScoredMove>, margin: Int = 0, maxMoves: Int = 5): List<ScoredMove> {
-            if (allMoves.size == 0) {
-                return allMoves
-            }
-
-            Collections.sort(allMoves)
-            val bestScore = allMoves[0].score
-            while (allMoves.size > maxMoves || allMoves[allMoves.size - 1].score > bestScore + margin) {
-                allMoves.removeAt(allMoves.size - 1)
-            }
-            return allMoves
-        }
-
-        private fun selectBestMove(allMoves: MutableList<ScoredMove>): String? {
-            val bestMoves = selectBestMoves(allMoves)
-            if (bestMoves.size == 0) {
-                return null
-            }
-            return allMoves[(Math.random() * allMoves.size).toInt()].move
-        }
-    }
 }

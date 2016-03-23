@@ -44,7 +44,7 @@ class TestEngine {
     @Test
     fun testResponsiveness() {
         val board = BitBoard().initialise()
-        val engine = ChessEngine(5, 2)
+        val engine = ChessEngine(5, 1)
         var bestMove: String?
         var nextMove: BitBoard.BitBoardMove
 
