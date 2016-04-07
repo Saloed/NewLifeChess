@@ -34,4 +34,13 @@ object EngineHelper {
     fun getColor(piece: Int): Int {
         return (piece and Piece.MASK_COLOR)
     }
+
+    fun getPosition(square: String): Long {
+        val index = coords.indexOf(square)
+        if (index < 0 || index > 63)
+            throw IllegalArgumentException("square not found")
+
+        return (1L shl index)
+    }
+
 }

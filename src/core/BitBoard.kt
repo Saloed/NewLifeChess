@@ -13,7 +13,7 @@ class BitBoard {
     var flags: Int = 0
         private set
 
-    private var moveCount: Int = 0
+    var moveCount: Int = 0
     var halfMoveCount: Int = 0
         private set
     private lateinit var lastMove: BitBoardMove
@@ -221,12 +221,12 @@ class BitBoard {
         return (java.lang.Long.numberOfTrailingZeros(value) - java.lang.Long.numberOfTrailingZeros(pos) and 0x07)
     }
 
-    fun getColoredPiece(pos: Long): Int {
-        var piece = getPiece(pos)
-        if (bitmaps[MAP_BLACK] and pos != 0L) {
-            piece = piece or Piece.BLACK
+    fun getColor(pos: Long): Int {
+        //var piece = getPiece(pos)
+        if ((bitmaps[MAP_BLACK] and pos) != 0L) {
+            return Piece.BLACK
         }
-        return piece
+        return Piece.WHITE
     }
 
     private fun castle(move: BitBoardMove) {
@@ -498,7 +498,7 @@ class BitBoard {
         var promoteTo: Int = 0
         var captureSquare: Long = 0
         var toSquare: Long = 0
-        private var fromSquare: Long = 0
+        var fromSquare: Long = 0
         var castleDir: Int = 0
         var epFile: Int = 0
 
@@ -594,6 +594,20 @@ class BitBoard {
                     + " )")
 
             return retValue
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (other == null) return false;
+            if (other !is BitBoardMove) return false
+            if (other.fromSquare != fromSquare) return false
+            if (other.toSquare != toSquare) return false
+            if (other.castle != castle) return false
+            if (other.isCapture != isCapture) return false
+            if (other.enpassant != enpassant) return false
+            if (other.promote != promote) return false
+            if (other.colorIndex != colorIndex) return false
+            if (other.pieceIndex != pieceIndex) return false
+            return true
         }
 
         companion object {

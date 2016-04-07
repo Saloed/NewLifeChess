@@ -41,27 +41,27 @@ class TestEngine {
         assertEquals(0, moves.size.toLong())
     }
 
-    @Test
-    fun testResponsiveness() {
-        val board = BitBoard().initialise()
-        val engine = ChessEngine(5, 1)
-        var bestMove: String?
-        var nextMove: BitBoard.BitBoardMove
 
-        var start: Long = 0L
-        var decisionTime: Long = 0L
-        var turn = 0;
-        println("Responsiveness test")
-        while (decisionTime < 25000 && turn < 20) {
-            start = System.currentTimeMillis()
-            bestMove = engine.getPreferredMove(board)
-            decisionTime = System.currentTimeMillis() - start
-            nextMove = board.getMove(bestMove!!)
-            board.makeMove(nextMove)
-            turn++
-            println("$turn ${decisionTime / 1000}s${decisionTime % 1000}ms $bestMove ")
-        }
+}
 
+fun main(arg: Array<String>) {
+    val board = BitBoard().initialise()
+    val engine = ChessEngine(5, 1)
+    var bestMove: String?
+    var nextMove: BitBoard.BitBoardMove
+
+    var start: Long = 0L
+    var decisionTime: Long = 0L
+    var turn = 0;
+    println("Responsiveness test")
+    while (decisionTime < 25000 && turn < 20) {
+        start = System.currentTimeMillis()
+        bestMove = engine.getPreferredMove(board)
+        decisionTime = System.currentTimeMillis() - start
+        nextMove = board.getMove(bestMove!!)
+        board.makeMove(nextMove)
+        turn++
+        println("$turn ${decisionTime / 1000}s${decisionTime % 1000}ms $bestMove ")
     }
 
 }

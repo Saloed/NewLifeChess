@@ -34,7 +34,7 @@ class UCIInterface private constructor() {
     @Throws(IOException::class)
     private fun startInterface() {
         val input = BufferedReader(InputStreamReader(System.`in`))
-        var command: String = input.readLine()
+        var command: String? = input.readLine()
         while ((command) != null) {
             val splitCommand: MutableList<String> =
                     ((command.split(" ".toRegex()).dropLastWhile({ it.isEmpty() }).toMutableList()))
