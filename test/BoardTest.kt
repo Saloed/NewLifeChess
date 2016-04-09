@@ -3,12 +3,12 @@ import core.CheckDetector
 import core.moves.MoveGenerator
 import core.moves.PawnCaptureGenerator
 import org.junit.Test
-import uci.FENParser
 
 import java.util.ArrayList
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import uci.FENParser
 
 class BoardTest {
 

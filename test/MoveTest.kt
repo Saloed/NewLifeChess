@@ -1,9 +1,8 @@
 import core.BitBoard
 import core.moves.MoveGenerator
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import uci.FENParser
-
-import org.junit.Assert.assertEquals
 
 class MoveTest {
 
@@ -18,7 +17,7 @@ class MoveTest {
         val board = BitBoard()
         FENParser.loadPosition("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", board)
         executeBoard(board, intArrayOf(48, 2039, 97862, 4085603))
-        //		executeBoard(board, new int[] { 48, 2039, 97862, 4085603, 193690690, });
+        //executeBoard(board, intArrayOf(48, 2039, 97862, 4085603, 193690690));
     }
 
     @Test
@@ -27,7 +26,7 @@ class MoveTest {
         FENParser.loadPosition("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1", board)
 
         executeBoard(board, intArrayOf(14, 191, 2812, 43238, 674624, 11030083))
-        //		executeBoard(board, new int[] { 14, 191, 2812, 43238, 674624, 11030083, 178633661, });
+        //executeBoard(board, intArrayOf(14, 191, 2812, 43238, 674624, 11030083, 178633661));
     }
 
     @Test

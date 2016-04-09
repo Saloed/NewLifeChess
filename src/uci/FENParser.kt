@@ -60,7 +60,7 @@ object FENParser {
             var emptyCount = 0
             for (file in 0..7) {
                 val pos = 1L shl (rank shl 3) shl file
-                val symbol = getSymbol((if (board.bitmapBlack and pos == 0L) Piece.WHITE else Piece.BLACK or board.getPiece(pos)))
+                val symbol = getSymbol(((if ((board.bitmapBlack and pos) == 0L) Piece.WHITE else Piece.BLACK) or board.getPiece(pos)))
                 if (symbol == null) {
                     emptyCount++
                 } else {
@@ -153,7 +153,7 @@ object FENParser {
         } else {
             board.enPassantFile = -1
         }
-        board.moveNumber = java.lang.Integer.parseInt(fields[5])
+        board.moveNumber = Integer.parseInt(fields[5])
 
         return board
     }

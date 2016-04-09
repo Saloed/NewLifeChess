@@ -56,9 +56,9 @@ fun main(arg: Array<String>) {
     println("Responsiveness test")
     while (decisionTime < 25000 && turn < 20) {
         start = System.currentTimeMillis()
-        bestMove = engine.getPreferredMove(board)
+        bestMove = engine.getPreferredMove(board)!!
         decisionTime = System.currentTimeMillis() - start
-        nextMove = board.getMove(bestMove!!)
+        nextMove = board.getMove(bestMove)
         board.makeMove(nextMove)
         turn++
         println("$turn ${decisionTime / 1000}s${decisionTime % 1000}ms $bestMove ")

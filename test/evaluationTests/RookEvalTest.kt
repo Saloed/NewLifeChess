@@ -3,9 +3,9 @@ package evaluationTests
 import core.BitBoard
 import evaluator.RookEvaluator
 import org.junit.Test
-import uci.FENParser
 
 import org.junit.Assert.assertEquals
+import uci.FENParser
 
 class RookEvalTest {
     private val rs = RookEvaluator()

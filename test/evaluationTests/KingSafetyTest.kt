@@ -3,9 +3,9 @@ package evaluationTests
 import core.BitBoard
 import evaluator.KingSafetyEvaluator
 import org.junit.Test
-import uci.FENParser
 
 import org.junit.Assert.assertEquals
+import uci.FENParser
 
 class KingSafetyTest {
     private val scorer = KingSafetyEvaluator()

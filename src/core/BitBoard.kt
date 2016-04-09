@@ -194,6 +194,7 @@ class BitBoard {
         System.arraycopy(bitmaps, 0, bb.bitmaps, 0, bitmaps.size)
         bb.player = player
         bb.flags = flags
+        bb.castlingOptions = castlingOptions
         bb.halfMoveCount = halfMoveCount
         bb.moveCount = moveCount
         return bb
@@ -360,7 +361,7 @@ class BitBoard {
                 val myKing = bitmaps[MAP_KINGS] and bitmaps[player]
                 val kingIdx = java.lang.Long.numberOfTrailingZeros(myKing)
                 var possiblePins = ( Bitmaps.star2Map[kingIdx]
-                        and BitBoard.getFileMap(kingIdx and 0x07).inv() and Bitmaps.BORDER.inv() and bitmaps[player])
+                        and getFileMap(kingIdx and 0x07).inv() and Bitmaps.BORDER.inv() and bitmaps[player])
                 possiblePins = possiblePins xor bitmaps[getCurrentPlayer()]
 
                 var freePawns = possiblePins and bitmaps[MAP_PAWNS]
@@ -438,17 +439,17 @@ class BitBoard {
      */
     fun getMove(move: String): BitBoardMove {
         if (move == "E1G1" && getPiece(1L shl 4) == Piece.KING && player == Piece.WHITE)
-            return BitBoard.generateCastling(BitBoard.CASTLE_WKS)
+            return generateCastling(CASTLE_WKS)
 
         if (move == "E8G8" && getPiece(1L shl 60) == Piece.KING && player == Piece.BLACK)
-            return BitBoard.generateCastling(BitBoard.CASTLE_BKS)
+            return generateCastling(CASTLE_BKS)
 
         if (move == "E1C1" && getPiece(1L shl 4) == Piece.KING && player == Piece.WHITE) {
-            return BitBoard.generateCastling(BitBoard.CASTLE_WQS)
+            return generateCastling(CASTLE_WQS)
 
         }
         if (move == "E8C8" && getPiece(1L shl 60) == Piece.KING && player == Piece.BLACK) {
-            return BitBoard.generateCastling(BitBoard.CASTLE_BQS)
+            return generateCastling(CASTLE_BQS)
         }
 
 
@@ -459,9 +460,8 @@ class BitBoard {
         val pieceCap = getPiece(to)
         if (piece == Piece.PAWN &&
                 Math.abs(java.lang.Long.numberOfTrailingZeros(from) - java.lang.Long.numberOfTrailingZeros(to)) == 16) {
-            return BitBoard.generateDoubleAdvanceMove(from, to, player)
+            return generateDoubleAdvanceMove(from, to, player)
         }
-
         if (piece == Piece.PAWN && to and FINAL_RANKS != 0L) {
             var promoTo: Int = 0
             when (move[move.length - 1]) {
@@ -471,20 +471,20 @@ class BitBoard {
                 'B' -> promoTo = Piece.BISHOP
             }
             if (pieceCap != 0) {
-                return BitBoard.generateCaptureAndPromote(from, to, player, pieceCap, promoTo)
+                return generateCaptureAndPromote(from, to, player, pieceCap, promoTo)
             } else {
-                return BitBoard.generatePromote(from, to, player, promoTo)
+                return generatePromote(from, to, player, promoTo)
             }
         }
 
         if (piece == Piece.PAWN && Math.abs(java.lang.Long.numberOfTrailingZeros(from) - java.lang.Long.numberOfTrailingZeros(to)) != 8 && pieceCap == 0) {
-            return BitBoard.generateEnPassantCapture(from, to, player)
+            return generateEnPassantCapture(from, to, player)
         }
 
         if (pieceCap != 0) {
-            return BitBoard.generateCapture(from, to, player, piece, getPiece(to))
+            return generateCapture(from, to, player, piece, getPiece(to))
         } else {
-            return BitBoard.generateMove(from, to, player, piece)
+            return generateMove(from, to, player, piece)
         }
     }
 
@@ -518,8 +518,21 @@ class BitBoard {
             this.castleDir = castleDir
             if (castleDir == CASTLE_WKS || castleDir == CASTLE_WQS) {
                 castleOff = (CASTLE_WKS or CASTLE_WQS)
+                this.fromSquare = 1L shl 4
+                if (castleDir == CASTLE_WKS) {
+                    this.toSquare = 1L shl 6
+                } else {
+                    this.toSquare = 1L shl 2
+                }
+
             } else {
                 castleOff = (CASTLE_BKS or CASTLE_BQS)
+                this.fromSquare = 1L shl 60
+                if (castleDir == CASTLE_BKS) {
+                    this.toSquare = 1L shl 62
+                } else {
+                    this.toSquare = 1L shl 58
+                }
             }
         }
 
@@ -549,6 +562,35 @@ class BitBoard {
             this.captureType = captureType
             this.isCapture = true
             this.captureSquare = toSquare
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (other == null) return false;
+            if (other !is BitBoardMove) return false
+            if (other.fromSquare != fromSquare) return false
+            if (other.toSquare != toSquare) return false
+            if (other.castle != castle) return false
+            if (other.isCapture != isCapture) return false
+            if (other.enpassant != enpassant) return false
+            if (other.promote != promote) return false
+            if (other.colorIndex != colorIndex) return false
+            if (other.pieceIndex != pieceIndex) return false
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var hash = fromSquare or toSquare
+            hash *= pieceIndex
+            hash += 19 * colorIndex
+            if (castle)
+                hash += 19 * 7
+            if (isCapture)
+                hash += 19 * 11
+            if (enpassant)
+                hash += 19 * 13
+            if (promote)
+                hash += 19 * 17
+            return hash.toInt()
         }
 
         val algebraic: String
@@ -594,20 +636,6 @@ class BitBoard {
                     + " )")
 
             return retValue
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (other == null) return false;
-            if (other !is BitBoardMove) return false
-            if (other.fromSquare != fromSquare) return false
-            if (other.toSquare != toSquare) return false
-            if (other.castle != castle) return false
-            if (other.isCapture != isCapture) return false
-            if (other.enpassant != enpassant) return false
-            if (other.promote != promote) return false
-            if (other.colorIndex != colorIndex) return false
-            if (other.pieceIndex != pieceIndex) return false
-            return true
         }
 
         companion object {
@@ -736,10 +764,10 @@ class BitBoard {
 
         fun generatePromotions(fromSquare: Long, toSquare: Long, colorIndex: Int): List<BitBoardMove> {
             val moves = arrayOfNulls<BitBoardMove>(4)
-            moves[0] = BitBoard.generatePromote(fromSquare, toSquare, colorIndex, Piece.QUEEN)
-            moves[1] = BitBoard.generatePromote(fromSquare, toSquare, colorIndex, Piece.KNIGHT)
-            moves[2] = BitBoard.generatePromote(fromSquare, toSquare, colorIndex, Piece.ROOK)
-            moves[3] = BitBoard.generatePromote(fromSquare, toSquare, colorIndex, Piece.BISHOP)
+            moves[0] = generatePromote(fromSquare, toSquare, colorIndex, Piece.QUEEN)
+            moves[1] = generatePromote(fromSquare, toSquare, colorIndex, Piece.KNIGHT)
+            moves[2] = generatePromote(fromSquare, toSquare, colorIndex, Piece.ROOK)
+            moves[3] = generatePromote(fromSquare, toSquare, colorIndex, Piece.BISHOP)
             return Arrays.asList<BitBoardMove>(*moves)
         }
 

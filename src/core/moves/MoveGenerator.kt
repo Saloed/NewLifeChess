@@ -5,7 +5,6 @@ import core.BitBoard.BitBoardMove
 import core.Bitmaps
 import core.CheckDetector
 import model.Piece
-
 import java.util.*
 
 class MoveGenerator(private val bitBoard: BitBoard) : Iterator<BitBoardMove> {

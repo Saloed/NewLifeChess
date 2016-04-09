@@ -4,9 +4,9 @@ import core.BitBoard
 import evaluator.BishopMobilityEvaluator
 import evaluator.BishopPairEvaluator
 import org.junit.Test
-import uci.FENParser
 
 import org.junit.Assert.assertEquals
+import uci.FENParser
 
 class BishopEvalTest {
     private val scorer = BishopPairEvaluator()

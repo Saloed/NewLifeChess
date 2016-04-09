@@ -7,11 +7,10 @@ import model.Piece
 import uci.FENParser
 import java.util.*
 
-
 class ChessAPI {
 
-    private var depth: Int = 4;
-    private var qdepth: Int = 2;
+    private var depth: Int = 3;
+    private var qdepth: Int = 0;
 
     private var board = BitBoard()
 
@@ -28,7 +27,7 @@ class ChessAPI {
         val count = board.moveCount
         val number = board.moveNumber
         val player = currentPlayer()
-        movesHistory.push(HistoryMove(count, number, player, move, bitBoardMove, getFen(), board))
+        movesHistory.push(HistoryMove(board.clone()))
         board.makeMove(bitBoardMove)
     }
 
@@ -52,9 +51,16 @@ class ChessAPI {
 
     fun currentPlayer() = board.getCurrentPlayer()
 
-    fun unmakeMove() {
-        val last = movesHistory.pop()
-        board = last.board
+    fun unmakeMove(): Boolean {
+        if (!movesHistory.isEmpty()) {
+            val last = movesHistory.pop()
+            board = last.board
+            if (board.player != Piece.WHITE) {
+                board = movesHistory.pop().board
+            }
+            return true;
+        }
+        return false;
     }
 
     fun getHistory() = movesHistory
@@ -84,9 +90,18 @@ class ChessAPI {
         this.qdepth = qdepth
     }
 
+    val TAG = "APPLICATION_DEBUG"
+
+
     fun computerMove(): String {
+
+        //Log.i(TAG, "Thread name is " + Thread.currentThread().name)
+        //Log.i(TAG, "engine start work")
         val engine = ChessEngine(depth, qdepth)
+        //Log.i(TAG, "power selected")
         val move = engine.getPreferredMove(board) ?: return ""
+        //Log.i(TAG, "move calculated")
+
         makeMove(move)
         return move
     }
@@ -111,9 +126,7 @@ class ChessAPI {
     private fun indexToPosition(i: Int) = (1L shl i)
 
     data class SquareAndPiece(val file: Int, val rank: Int, val piece: Int, val color: Int)
-    data class HistoryMove(val moveCount: Int, val moveNumber: Int, val player: Int,
-                           val move: String, val moveAsBitboardMove: BitBoard.BitBoardMove,
-                           val fen: String, val board: BitBoard)
+    data class HistoryMove(val board: BitBoard)
 
 
 }
