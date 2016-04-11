@@ -732,8 +732,7 @@ class BitBoard {
          */
         fun toCoords(bitmap: Long): IntArray {
             val zeros = java.lang.Long.numberOfTrailingZeros(bitmap)
-            val coords = intArrayOf(zeros and 0x07, zeros.ushr(3))
-            return coords
+            return intArrayOf(zeros and 0x07, zeros.ushr(3))
         }
 
         fun generateMove(
