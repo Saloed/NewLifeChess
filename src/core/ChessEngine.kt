@@ -12,7 +12,11 @@ class ChessEngine {
     var qdepth = Q_DEPTH
     var scoreMargin = 1000
     var maxDeepMoves = 5
-    private val quiesce = false
+    private val quiesce = true
+
+
+    //    val indicator = LinkedHashMap<Int, AtomicInteger>();
+    //    val indicer = LinkedHashMap<Int, AtomicInteger>();
 
     constructor() {
         this.gameScorer = GameScorer.defaultScorer
@@ -29,8 +33,36 @@ class ChessEngine {
 
     fun getPreferredMove(bitBoard: BitBoard): String? {
 
-        val allMoves = getScoredMoves(bitBoard)
 
+        //        indicator.put(0, AtomicInteger(0))
+        //        indicator.put(1, AtomicInteger(0))
+        //        indicator.put(2, AtomicInteger(0))
+        //        indicator.put(3, AtomicInteger(0))
+        //        indicator.put(4, AtomicInteger(0))
+        //        indicator.put(5, AtomicInteger(0))
+        //
+        //
+        //        indicer.put(0, AtomicInteger(0))
+        //        indicer.put(1, AtomicInteger(0))
+        //        indicer.put(2, AtomicInteger(0))
+        //        indicer.put(3, AtomicInteger(0))
+        //        indicer.put(4, AtomicInteger(0))
+        //        indicer.put(5, AtomicInteger(0))
+        //
+
+        val allMoves = getScoredMoves(bitBoard)
+        //
+        //
+        //        for (a in indicator.keys) {
+        //
+        //            println("Depth $a  Calculations ${indicator[a].toString()} ")
+        //            println("Depth $a  Total Moves  ${indicer[a].toString()} ")
+        //
+        //        }
+        //
+        //        indicator.clear()
+        //        indicer.clear()
+        //
 
         return selectBestMove(allMoves)
     }
@@ -40,7 +72,15 @@ class ChessEngine {
 
 
         val moveItr = MoveGenerator(bitBoard)
+
+        //
+        //        val tempGen=MoveGenerator(bitBoard)
+        //        indicer[0]!!.addAndGet(tempGen.allRemainingMoves.size)
+
+
         while (moveItr.hasNext()) {
+
+
             val move = moveItr.next()
 
             bitBoard.makeMove(move)
@@ -63,7 +103,7 @@ class ChessEngine {
         val qmoves = MoveGenerator(bitBoard).threateningMoves
 
         if (depth >= qdepth || qmoves.size == 0) {
-            return gameScorer.score(bitBoard, false, alpha, beta)
+            return gameScorer.score(bitBoard)
         }
 
         for (move in qmoves) {
@@ -88,10 +128,11 @@ class ChessEngine {
         val qmoves = MoveGenerator(bitBoard).threateningMoves
 
         if (depth >= qdepth || qmoves.size == 0) {
-            return -gameScorer.score(bitBoard, false, alpha, beta)
+            return -gameScorer.score(bitBoard)
         }
 
         for (move in qmoves) {
+
             bitBoard.makeMove(move)
             val score = alphaBetaMaxQ(alpha, beta, depth + 1, bitBoard)
             bitBoard.unmakeMove()
@@ -109,6 +150,9 @@ class ChessEngine {
     private fun alphaBetaMax(alpha: Int, beta: Int, depthLeft: Int, bitBoard: BitBoard): Int {
 
         //  Log.i(TAG, "Max ${depth - depthLeft} " + Thread.currentThread().name)
+        //
+        //        indicator[depth - depthLeft]!!.incrementAndGet()
+
 
         var alpha = alpha
         val moveItr = MoveGenerator(bitBoard)
@@ -116,12 +160,12 @@ class ChessEngine {
             var rv: Int
             if (quiesce) {
                 if (moveItr.hasNext()) {
-                    rv = alphaBetaMinQ(alpha, beta, 0, bitBoard)
+                    rv = alphaBetaMaxQ(alpha, beta, 0, bitBoard)
                 } else {
-                    rv = gameScorer.score(bitBoard, false, alpha, beta)
+                    rv = gameScorer.score(bitBoard)
                 }
             } else {
-                rv = gameScorer.score(bitBoard, false, alpha, beta)
+                rv = gameScorer.score(bitBoard)
             }
             if (rv == GameScorer.MATE_SCORE) {
                 rv *= depthLeft + 1
@@ -129,7 +173,16 @@ class ChessEngine {
             return rv
         }
 
+        //
+
+        //        val tempGen=MoveGenerator(bitBoard)
+        //        indicer[depth - depthLeft + 1]!!.addAndGet(tempGen.allRemainingMoves.size)
+        //
+
+
         while (moveItr.hasNext()) {
+
+
             val move = moveItr.next()
 
             bitBoard.makeMove(move)
@@ -149,6 +202,8 @@ class ChessEngine {
 
         //  Log.i(TAG, "Min ${depth - depthLeft} " + Thread.currentThread().name)
 
+        //        indicator[depth - depthLeft]!!.incrementAndGet()
+        //
 
         var beta = beta
         val moveItr = MoveGenerator(bitBoard)
@@ -156,12 +211,12 @@ class ChessEngine {
             var rv: Int
             if (quiesce) {
                 if (moveItr.hasNext()) {
-                    rv = alphaBetaMaxQ(alpha, beta, 0, bitBoard)
+                    rv = alphaBetaMinQ(alpha, beta, 0, bitBoard)
                 } else {
-                    rv = gameScorer.score(bitBoard, false, alpha, beta)
+                    rv = gameScorer.score(bitBoard)
                 }
             } else {
-                rv = gameScorer.score(bitBoard, false, alpha, beta)
+                rv = gameScorer.score(bitBoard)
             }
             if (rv == GameScorer.MATE_SCORE) {
                 rv *= depthLeft + 1
@@ -169,7 +224,15 @@ class ChessEngine {
             return -rv
         }
 
+        //
+        //        val tempGen=MoveGenerator(bitBoard)
+        //        indicer[depth - depthLeft + 1]!!.addAndGet(tempGen.allRemainingMoves.size)
+        //
+
+
         while (moveItr.hasNext()) {
+
+
             val move = moveItr.next()
 
             bitBoard.makeMove(move)
@@ -186,8 +249,8 @@ class ChessEngine {
     }
 
     companion object {
-        private val DEPTH = 5
-        private val Q_DEPTH = 2
+        private val DEPTH = 4
+        private val Q_DEPTH = 1
 
         /**
          * Selects all moves sharing the lowest (i.e. best) score.
