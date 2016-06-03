@@ -47,7 +47,16 @@ class ChessAPI {
         return map
     }
 
-    fun strToMove(str: String) = board.getMove(str)
+    fun strToMove(str: String): BitBoard.BitBoardMove {
+        val to = BitBoard.coordToPosition(str.substring(2, 4))
+        if (to and BitBoard.FINAL_RANKS != 0L) {
+            val from = BitBoard.coordToPosition(str.substring(0, 2))
+            val piece = board.getPiece(from)
+            if (piece == Piece.PAWN)
+                return board.getMove(str + "Q")
+        }
+        return board.getMove(str)
+    }
 
     fun currentPlayer() = board.getCurrentPlayer()
 

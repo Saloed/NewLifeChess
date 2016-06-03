@@ -360,7 +360,7 @@ class BitBoard {
             if (!inCheck) {
                 val myKing = bitmaps[MAP_KINGS] and bitmaps[player]
                 val kingIdx = java.lang.Long.numberOfTrailingZeros(myKing)
-                var possiblePins = ( Bitmaps.star2Map[kingIdx]
+                var possiblePins = (Bitmaps.star2Map[kingIdx]
                         and getFileMap(kingIdx and 0x07).inv() and Bitmaps.BORDER.inv() and bitmaps[player])
                 possiblePins = possiblePins xor bitmaps[getCurrentPlayer()]
 
@@ -789,7 +789,7 @@ class BitBoard {
             return BitBoardMove(castleDir)
         }
 
-        private fun coordToPosition(coord: String): Long {
+        public fun coordToPosition(coord: String): Long {
             return 1L shl (EngineHelper.FILES.indexOf(coord[0]) or (EngineHelper.RANKS.indexOf(coord[1]) shl 3))
         }
 

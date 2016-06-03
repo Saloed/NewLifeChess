@@ -20,7 +20,7 @@ class KnightEvaluator : PositionEvaluator {
         val enemyPawnsRight = if (color == Piece.WHITE)
             (enemyPawns and BitBoard.getFileMap(0).inv()).ushr(9)
         else
-            ( enemyPawns and BitBoard.getFileMap(0).inv() shl 7)
+            (enemyPawns and BitBoard.getFileMap(0).inv() shl 7)
         val enemyPawnsLeft = if (color == Piece.WHITE)
             (enemyPawns and BitBoard.getFileMap(7).inv()).ushr(7)
         else
@@ -86,7 +86,7 @@ class KnightEvaluator : PositionEvaluator {
                     isSupported = true
                     var scaryPawns: Long = 0
                     var r = onRank + pawnAttackDir
-                    while ((r > 0) && ( r < 7)) {
+                    while ((r > 0) && (r < 7)) {
                         if (position[0] > 0) {
                             scaryPawns = scaryPawns or (1L shl (r shl 3) shl (position[0] - 1))
                         }

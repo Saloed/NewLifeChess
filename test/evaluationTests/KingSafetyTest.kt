@@ -2,9 +2,8 @@ package evaluationTests
 
 import core.BitBoard
 import evaluator.KingSafetyEvaluator
-import org.junit.Test
-
 import org.junit.Assert.assertEquals
+import org.junit.Test
 import uci.FENParser
 
 class KingSafetyTest {
@@ -32,9 +31,9 @@ class KingSafetyTest {
     @Test
     fun testFiancettoed() {
         FENParser.loadPosition("rnbq1rk1/pppppppp/8/8/8/8/PPPPPPBP/RNBQ1RK1 w - - 0 1", board)
-       /* println()
-        println("Test value")
-        println()*/
+        /* println()
+         println("Test value")
+         println()*/
         assertEquals(-30, scorer.evaluatePosition(board).toLong())
     }
 }

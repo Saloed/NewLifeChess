@@ -2,13 +2,11 @@ import core.BitBoard
 import core.CheckDetector
 import core.moves.MoveGenerator
 import core.moves.PawnCaptureGenerator
-import org.junit.Test
-
-import java.util.ArrayList
-
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Test
 import uci.FENParser
+import java.util.*
 
 class BoardTest {
 
