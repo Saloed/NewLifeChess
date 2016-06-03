@@ -423,9 +423,10 @@ class BitBoard {
                 return true
             }
 
-            if (this.repeatedCount >= 3) {
-                return true
-            }
+            //fixme: produce bug with unmake move (previous move doesn't exist)
+//            if (this.repeatedCount >= 3) {
+//                return true
+//            }
 
             if (!hasMatingMaterial()) {
                 return true

@@ -5,11 +5,13 @@ import evaluator.GameScorer
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
+import java.util.logging.Level
+import java.util.logging.Logger
 
 class ChessEngine {
 
 
-    private val executor = Executors.newFixedThreadPool(2, Executors.privilegedThreadFactory())
+    private val executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), Executors.privilegedThreadFactory())
 
     private val gameScorer: GameScorer
     var depth = DEPTH
@@ -36,6 +38,10 @@ class ChessEngine {
         return selectBestMove(allMoves)
     }
 
+    fun stopExecutor() {
+        executor.shutdownNow()
+    }
+
     private fun getScoredMoves(bitBoard: BitBoard): MutableList<ScoredMove> {
         val rv = ArrayList<ScoredMove>()
         val moveItr = MoveGenerator(bitBoard)
@@ -46,13 +52,21 @@ class ChessEngine {
             val changeBoard = bitBoard.clone()
             tasks.add(Callable {
                 changeBoard.makeMove(move)
-                val score = alphaBetaMax(Integer.MIN_VALUE, Integer.MAX_VALUE, depth, changeBoard)
+                val score: Int
+                try {
+                    score = alphaBetaMax(Integer.MIN_VALUE, Integer.MAX_VALUE, depth, changeBoard)
+                } catch(e: Exception) {
+                    Logger.getLogger("Engine").log(Level.WARNING, e.toString())
+                    score = 0
+                }
                 changeBoard.unmakeMove()
                 return@Callable ScoredMove(move.algebraic, score)
+
             })
         }
 
         executor.invokeAll(tasks).forEach { rv.add(it.get()) }
+        //tasks.forEach { rv.add(it.call()) }
         return rv
     }
 

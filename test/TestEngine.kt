@@ -46,7 +46,7 @@ class TestEngine {
 
 fun main(arg: Array<String>) {
     val board = BitBoard().initialise()
-    val engine = ChessEngine(4, 1)
+    val engine = ChessEngine(5, 2)
     var bestMove: String?
     var nextMove: BitBoard.BitBoardMove
 
@@ -63,5 +63,5 @@ fun main(arg: Array<String>) {
         turn++
         println("$turn ${decisionTime / 1000}s${decisionTime % 1000}ms $bestMove ")
     }
-
+    engine.stopExecutor()
 }
