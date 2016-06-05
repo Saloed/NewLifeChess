@@ -13,7 +13,7 @@ class UCIInterface private constructor() {
     private val commands = HashMap<String, Command>()
     private var terminate = false
     private var debug = false
-
+    private val engine = ChessEngine(5, 2)
     private val board = BitBoard()
 
     init {
@@ -69,9 +69,8 @@ class UCIInterface private constructor() {
     private inner class CommandGo : Command {
 
         override fun execute(args: MutableList<String>) {
-            val node = ChessEngine()
 
-            val bestMove = node.getPreferredMove(board)
+            val bestMove = engine.getPreferredMove(board)
             send("info pv " + bestMove)
             send("bestmove " + bestMove!!.toLowerCase())
 
@@ -204,7 +203,9 @@ class UCIInterface private constructor() {
             try {
                 uciInterface.startInterface()
             } catch (x: Exception) {
-                System.err.println("x")
+                System.err.println(x)
+            } finally {
+                uciInterface.engine.stopExecutor()
             }
 
         }

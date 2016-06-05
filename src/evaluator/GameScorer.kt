@@ -18,7 +18,7 @@ class GameScorer {
      */
     fun score(bitBoard: BitBoard): Int {
 
-        //		System.out.println("score(" + alpha + ","+beta+")");
+        //		println("score(" + alpha + ","+beta+")");
         val result = bitBoard.stalemate
 
         if (result === BitBoard.RES_DRAW) {

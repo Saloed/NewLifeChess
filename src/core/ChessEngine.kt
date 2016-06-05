@@ -5,6 +5,7 @@ import evaluator.GameScorer
 import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicLong
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -19,6 +20,10 @@ class ChessEngine {
     var scoreMargin = 1000
     var maxDeepMoves = 5
     private val quiesce = true
+
+    val nodes = AtomicLong(0)
+    val qnodes = AtomicLong(0)
+    val evalCalls = AtomicLong(0)
 
     constructor() {
         this.gameScorer = GameScorer.defaultScorer
@@ -43,6 +48,11 @@ class ChessEngine {
     }
 
     private fun getScoredMoves(bitBoard: BitBoard): MutableList<ScoredMove> {
+
+        nodes.set(0)
+        qnodes.set(0)
+        evalCalls.set(0)
+
         val rv = ArrayList<ScoredMove>()
         val moveItr = MoveGenerator(bitBoard)
         val tasks = LinkedList<Callable<ScoredMove>>()
@@ -73,11 +83,24 @@ class ChessEngine {
     private fun alphaBetaMaxQ(alpha: Int, beta: Int, depth: Int, bitBoard: BitBoard): Int {
 
         var alpha = alpha
-        val qmoves = MoveGenerator(bitBoard).threateningMoves
 
-        if (depth >= qdepth || qmoves.size == 0) {
+        if (depth >= qdepth) {
+            evalCalls.incrementAndGet()
             return gameScorer.score(bitBoard)
         }
+
+
+
+        val qmoves = MoveGenerator(bitBoard).threateningMoves
+
+        if (qmoves.isEmpty()) {
+            evalCalls.incrementAndGet()
+            return gameScorer.score(bitBoard)
+        }
+
+        qnodes.incrementAndGet()
+
+
 
         for (move in qmoves) {
             bitBoard.makeMove(move)
@@ -95,11 +118,19 @@ class ChessEngine {
     private fun alphaBetaMinQ(alpha: Int, beta: Int, depth: Int, bitBoard: BitBoard): Int {
 
         var beta = beta
-        val qmoves = MoveGenerator(bitBoard).threateningMoves
-
-        if (depth >= qdepth || qmoves.size == 0) {
+        if (depth >= qdepth) {
+            evalCalls.incrementAndGet()
             return -gameScorer.score(bitBoard)
         }
+
+        val qmoves = MoveGenerator(bitBoard).threateningMoves
+
+        if (qmoves.isEmpty()) {
+            evalCalls.incrementAndGet()
+            return -gameScorer.score(bitBoard)
+        }
+        qnodes.incrementAndGet()
+
 
         for (move in qmoves) {
 
@@ -125,9 +156,11 @@ class ChessEngine {
                 if (moveItr.hasNext()) {
                     rv = alphaBetaMaxQ(alpha, beta, 0, bitBoard)
                 } else {
+                    evalCalls.incrementAndGet()
                     rv = gameScorer.score(bitBoard)
                 }
             } else {
+                evalCalls.incrementAndGet()
                 rv = gameScorer.score(bitBoard)
             }
             if (rv == GameScorer.MATE_SCORE) {
@@ -135,6 +168,9 @@ class ChessEngine {
             }
             return rv
         }
+
+
+        nodes.incrementAndGet()
 
         while (moveItr.hasNext()) {
 
@@ -163,9 +199,11 @@ class ChessEngine {
                 if (moveItr.hasNext()) {
                     rv = alphaBetaMinQ(alpha, beta, 0, bitBoard)
                 } else {
+                    evalCalls.incrementAndGet()
                     rv = gameScorer.score(bitBoard)
                 }
             } else {
+                evalCalls.incrementAndGet()
                 rv = gameScorer.score(bitBoard)
             }
             if (rv == GameScorer.MATE_SCORE) {
@@ -173,6 +211,9 @@ class ChessEngine {
             }
             return -rv
         }
+
+        nodes.incrementAndGet()
+
 
         while (moveItr.hasNext()) {
 
@@ -235,20 +276,20 @@ class ChessEngine {
             return result
         }
 
-        override fun equals(obj: Any?): Boolean {
-            if (this === obj)
+        override fun equals(other: Any?): Boolean {
+            if (this === other)
                 return true
-            if (obj == null)
+            if (other == null)
                 return false
-            if (javaClass != obj.javaClass)
+            if (javaClass != other.javaClass)
                 return false
-            val other = obj as ScoredMove
+            val oth = other as ScoredMove
             if (move == null) {
-                if (other.move != null)
+                if (oth.move != null)
                     return false
-            } else if (move != other.move)
+            } else if (move != oth.move)
                 return false
-            if (score != other.score)
+            if (score != oth.score)
                 return false
             return true
         }

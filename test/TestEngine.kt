@@ -50,8 +50,8 @@ fun main(arg: Array<String>) {
     var bestMove: String?
     var nextMove: BitBoard.BitBoardMove
 
-    var start: Long = 0L
-    var decisionTime: Long = 0L
+    var start = 0L
+    var decisionTime = 0L
     var turn = 0;
     println("Responsiveness test")
     while (decisionTime < 25000 && turn < 20) {
@@ -61,7 +61,9 @@ fun main(arg: Array<String>) {
         nextMove = board.getMove(bestMove)
         board.makeMove(nextMove)
         turn++
-        println("$turn ${decisionTime / 1000}s${decisionTime % 1000}ms $bestMove ")
+        println("$turn ${decisionTime / 1000}s${decisionTime % 1000}ms $bestMove // nodes ${engine.nodes} qnodes ${engine.qnodes} " +
+                "// NPS ${(engine.nodes.get() * 1000) / decisionTime}  QNPS  ${(engine.qnodes.get() * 1000) / decisionTime} " +
+                "// TotalEvals ${engine.evalCalls} EPS ${(engine.evalCalls.get() * 1000) / decisionTime}")
     }
     engine.stopExecutor()
 }
