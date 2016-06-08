@@ -23,10 +23,7 @@ abstract class PieceMoveGenerator {
         //                rv.add(move);
         //            }
         //            bitBoard.unmakeMove();
-        for (i in tempMoves.indices) {
-            if (tempMoves[i].isCapture)
-                rv.add(tempMoves[i])
-        }
+        tempMoves.forEach { rv.add(it) }
         // rv.addAll(tempMoves.stream().filter(Predicate<BitBoardMove> { it.isCapture() }).collect(Collectors.toList<BitBoardMove>()))
     }
 }

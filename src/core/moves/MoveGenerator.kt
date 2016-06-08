@@ -81,11 +81,11 @@ class MoveGenerator(private val bitBoard: BitBoard) : Iterator<BitBoardMove> {
      */
     val allRemainingMoves: List<BitBoardMove>
         get() {
-            val moves = ArrayList<BitBoardMove>()
-            while (this.hasNext()) {
-                moves.add(this.next())
-            }
-            return moves
+            queuedMoves.clear()
+            generators.forEach { it.generateMoves(bitBoard, inCheck, potentialPins, queuedMoves) }
+            var index = 0
+            queuedMoves.forEach { it.id = index; index++ }
+            return queuedMoves
         }
 
     val threateningMoves: List<BitBoardMove>

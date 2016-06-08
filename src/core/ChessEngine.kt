@@ -9,6 +9,8 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.logging.Level
 import java.util.logging.Logger
 
+const val INF = 10000
+
 class ChessEngine {
 
 
@@ -17,8 +19,8 @@ class ChessEngine {
     private val gameScorer: GameScorer
     var depth = DEPTH
     var qdepth = Q_DEPTH
-    var scoreMargin = 1000
-    var maxDeepMoves = 5
+    //var scoreMargin = 1000
+    //var maxDeepMoves = 5
     private val quiesce = true
 
     val nodes = AtomicLong(0)
@@ -57,20 +59,20 @@ class ChessEngine {
         val moveItr = MoveGenerator(bitBoard)
         val tasks = LinkedList<Callable<ScoredMove>>()
 
-        while (moveItr.hasNext()) {
-            val move = moveItr.next()
+        moveItr.forEach {
             val changeBoard = bitBoard.clone()
             tasks.add(Callable {
-                changeBoard.makeMove(move)
+                changeBoard.makeMove(it)
                 val score: Int
                 try {
-                    score = alphaBetaMax(Integer.MIN_VALUE, Integer.MAX_VALUE, depth, changeBoard)
+
+                    score = alphaBeta(-INF, INF, depth, changeBoard)
+
                 } catch(e: Exception) {
                     Logger.getLogger("Engine").log(Level.WARNING, e.toString())
                     score = 0
                 }
-                changeBoard.unmakeMove()
-                return@Callable ScoredMove(move.algebraic, score)
+                return@Callable ScoredMove(it.algebraic, score)
 
             })
         }
@@ -80,157 +82,68 @@ class ChessEngine {
         return rv
     }
 
-    private fun alphaBetaMaxQ(alpha: Int, beta: Int, depth: Int, bitBoard: BitBoard): Int {
+    private fun alphaBeta(alph: Int, beta: Int, depthLeft: Int, bitBoard: BitBoard): Int {
+        var alpha = alph
+        var bestscore = -INF
 
-        var alpha = alpha
-
-        if (depth >= qdepth) {
-            evalCalls.incrementAndGet()
-            return gameScorer.score(bitBoard)
+        if (depthLeft == 0) {
+            if (quiesce) return quiesce(alpha, beta, bitBoard, qdepth)
+            else return eval(bitBoard)
         }
 
+        val moves = MoveGenerator(bitBoard).allRemainingMoves
 
+        nodes.incrementAndGet()
 
-        val qmoves = MoveGenerator(bitBoard).threateningMoves
+        moves.forEach {
+            bitBoard.makeMove(it)
+            val score = -alphaBeta(-beta, -alpha, depthLeft - 1, bitBoard)
+            bitBoard.unmakeMove()
 
-        if (qmoves.isEmpty()) {
-            evalCalls.incrementAndGet()
-            return gameScorer.score(bitBoard)
+            if (score >= beta)
+                return score  // fail-soft beta-cutoff
+            if (score > bestscore) {
+                bestscore = score
+                if (score > alpha)
+                    alpha = score
+            }
         }
+        return bestscore
+    }
+
+    private fun eval(bitBoard: BitBoard) = gameScorer.score(bitBoard)
+
+    private fun quiesce(alph: Int, beta: Int, bitBoard: BitBoard, depth: Int): Int {
+        var alpha = alph
+        val standPat = eval(bitBoard)
+
+        evalCalls.incrementAndGet()
+
+        if (depth == 0) return standPat
+
+        if (standPat >= beta) return standPat
+        if (alpha < standPat)
+            alpha = standPat
+
+        val captures = MoveGenerator(bitBoard).threateningMoves
+
+        if (captures.isEmpty()) return standPat
 
         qnodes.incrementAndGet()
 
 
+        captures.forEach {
 
-        for (move in qmoves) {
-            bitBoard.makeMove(move)
-            val score = alphaBetaMinQ(alpha, beta, depth + 1, bitBoard)
+            bitBoard.makeMove(it)
+            val score = -quiesce(-beta, -alpha, bitBoard, depth - 1)
             bitBoard.unmakeMove()
 
-            if (score >= beta) {
-                return beta
-            }
-            alpha = Math.max(alpha, score)
+            if (score >= beta)
+                return beta;
+            if (score > alpha)
+                alpha = score;
         }
         return alpha
-    }
-
-    private fun alphaBetaMinQ(alpha: Int, beta: Int, depth: Int, bitBoard: BitBoard): Int {
-
-        var beta = beta
-        if (depth >= qdepth) {
-            evalCalls.incrementAndGet()
-            return -gameScorer.score(bitBoard)
-        }
-
-        val qmoves = MoveGenerator(bitBoard).threateningMoves
-
-        if (qmoves.isEmpty()) {
-            evalCalls.incrementAndGet()
-            return -gameScorer.score(bitBoard)
-        }
-        qnodes.incrementAndGet()
-
-
-        for (move in qmoves) {
-
-            bitBoard.makeMove(move)
-            val score = alphaBetaMaxQ(alpha, beta, depth + 1, bitBoard)
-            bitBoard.unmakeMove()
-
-            if (score <= alpha) {
-                return alpha
-            }
-            beta = Math.min(beta, score)
-        }
-        return beta
-    }
-
-    private fun alphaBetaMax(alpha: Int, beta: Int, depthLeft: Int, bitBoard: BitBoard): Int {
-
-        var alpha = alpha
-        val moveItr = MoveGenerator(bitBoard)
-        if (depthLeft == 0 || !moveItr.hasNext()) {
-            var rv: Int
-            if (quiesce) {
-                if (moveItr.hasNext()) {
-                    rv = alphaBetaMaxQ(alpha, beta, 0, bitBoard)
-                } else {
-                    evalCalls.incrementAndGet()
-                    rv = gameScorer.score(bitBoard)
-                }
-            } else {
-                evalCalls.incrementAndGet()
-                rv = gameScorer.score(bitBoard)
-            }
-            if (rv == GameScorer.MATE_SCORE) {
-                rv *= depthLeft + 1
-            }
-            return rv
-        }
-
-
-        nodes.incrementAndGet()
-
-        while (moveItr.hasNext()) {
-
-            val move = moveItr.next()
-
-            bitBoard.makeMove(move)
-            val score = alphaBetaMin(alpha, beta, depthLeft - 1, bitBoard)
-            bitBoard.unmakeMove()
-
-            if (score >= beta) {
-                return beta
-            }
-            alpha = Math.max(alpha, score)
-        }
-
-        return alpha
-    }
-
-    private fun alphaBetaMin(alpha: Int, beta: Int, depthLeft: Int, bitBoard: BitBoard): Int {
-
-        var beta = beta
-        val moveItr = MoveGenerator(bitBoard)
-        if (depthLeft == 0 || !moveItr.hasNext()) {
-            var rv: Int
-            if (quiesce) {
-                if (moveItr.hasNext()) {
-                    rv = alphaBetaMinQ(alpha, beta, 0, bitBoard)
-                } else {
-                    evalCalls.incrementAndGet()
-                    rv = gameScorer.score(bitBoard)
-                }
-            } else {
-                evalCalls.incrementAndGet()
-                rv = gameScorer.score(bitBoard)
-            }
-            if (rv == GameScorer.MATE_SCORE) {
-                rv *= depthLeft + 1
-            }
-            return -rv
-        }
-
-        nodes.incrementAndGet()
-
-
-        while (moveItr.hasNext()) {
-
-
-            val move = moveItr.next()
-
-            bitBoard.makeMove(move)
-            val score = alphaBetaMax(alpha, beta, depthLeft - 1, bitBoard)
-            bitBoard.unmakeMove()
-
-            if (score <= alpha) {
-                return alpha
-            }
-            beta = Math.min(beta, score)
-        }
-
-        return beta
     }
 
     companion object {

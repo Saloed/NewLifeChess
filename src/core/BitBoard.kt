@@ -18,6 +18,9 @@ class BitBoard {
         private set
     private lateinit var lastMove: BitBoardMove
 
+    //TODO: hash update
+    private var hash: Long = 0
+
     var castlingOptions: Int
         get() = (flags and CASTLE_MASK)
         set(options) {
@@ -32,7 +35,7 @@ class BitBoard {
         }
         flags = 0
         invalidateHistory()
-
+        hash = 0
     }
 
     /**
@@ -72,6 +75,7 @@ class BitBoard {
         halfMoveCount = 0
         lastMove = BitBoardMove.nullMove
 
+
         //		System.out.println(toPrettyString(bitmaps[Piece.BLACK]));
         return this
     }
@@ -97,6 +101,8 @@ class BitBoard {
                 flags = flags or (file shl 5)
             }
         }
+
+    fun zobristHash() = hash
 
     val enPassantRank: Int
         get() = if (getCurrentPlayer() == Piece.WHITE) 5 else 2
@@ -493,6 +499,9 @@ class BitBoard {
      * Represents all information needed to make/unmake a move on a bitboard.
      */
     class BitBoardMove {
+
+        var id: Int = -1  //help identify moves after sort (TestEngine)
+
         var colorIndex: Int = 0
         var pieceIndex: Int = 0
         var captureType: Int = 0
@@ -513,6 +522,8 @@ class BitBoard {
         var castleOff: Int = 0
         var halfMoveCount: Int = 0
         lateinit var previousMove: BitBoardMove
+
+        var score: Int = 0
 
         constructor(castleDir: Int) {
             this.castle = true
