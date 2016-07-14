@@ -504,6 +504,8 @@ class BitBoard {
 
         var colorIndex: Int = 0
         var pieceIndex: Int = 0
+
+        //type of piece to capture (pawn, knight etc.)
         var captureType: Int = 0
         var promoteTo: Int = 0
         var captureSquare: Long = 0

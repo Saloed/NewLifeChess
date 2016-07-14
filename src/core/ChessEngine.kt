@@ -2,87 +2,141 @@ package core
 
 import core.moves.MoveGenerator
 import evaluator.GameScorer
+import model.Piece
 import java.util.*
-import java.util.concurrent.Callable
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
-import java.util.logging.Level
-import java.util.logging.Logger
+import kotlin.concurrent.timerTask
 
 const val INF = 10000
 
 class ChessEngine {
 
+    private val executor by lazy {
+        Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), Executors.privilegedThreadFactory())
+    }
 
-    private val executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), Executors.privilegedThreadFactory())
+    constructor(depth: Int, qdepth: Int) {
+        this.maxDepth = depth
+        this.qdepth = qdepth
+    }
 
-    private val gameScorer: GameScorer
-    var depth = DEPTH
+    private val gameScorer = GameScorer.defaultScorer
+    var maxDepth = DEPTH
     var qdepth = Q_DEPTH
-    //var scoreMargin = 1000
-    //var maxDeepMoves = 5
+
     private val quiesce = true
 
     val nodes = AtomicLong(0)
     val qnodes = AtomicLong(0)
     val evalCalls = AtomicLong(0)
 
-    constructor() {
-        this.gameScorer = GameScorer.defaultScorer
-    }
+    @Volatile var inTime: Boolean = false
 
-    constructor(depth: Int, qdepth: Int) : this() {
-        this.depth = depth
-        this.qdepth = qdepth
-    }
-
-    constructor(gameScorer: GameScorer) {
-        this.gameScorer = gameScorer
-    }
+    private lateinit var board: BitBoard
+    private lateinit var moves: MutableList<ScoredMove>
+    private lateinit var bestMove: BitBoard.BitBoardMove
 
     fun getPreferredMove(bitBoard: BitBoard): String? {
-        val allMoves = getScoredMoves(bitBoard)
-        return selectBestMove(allMoves)
+        getScoredMoves(bitBoard)
+        return bestMove.algebraic
     }
 
-    fun stopExecutor() {
-        executor.shutdownNow()
-    }
+    fun stopExecutor() = executor.shutdownNow()
 
-    private fun getScoredMoves(bitBoard: BitBoard): MutableList<ScoredMove> {
+
+    private fun getScoredMoves(bitBoard: BitBoard) {
 
         nodes.set(0)
         qnodes.set(0)
         evalCalls.set(0)
 
-        val rv = ArrayList<ScoredMove>()
-        val moveItr = MoveGenerator(bitBoard)
-        val tasks = LinkedList<Callable<ScoredMove>>()
+        inTime = true
 
-        moveItr.forEach {
-            val changeBoard = bitBoard.clone()
-            tasks.add(Callable {
-                changeBoard.makeMove(it)
-                val score: Int
-                try {
+        Timer("Chess Timer").schedule(timerTask { inTime = false }, TimeUnit.SECONDS.toMillis(25))
 
-                    score = alphaBeta(-INF, INF, depth, changeBoard)
+        board = bitBoard.clone()
 
-                } catch(e: Exception) {
-                    Logger.getLogger("Engine").log(Level.WARNING, e.toString())
-                    score = 0
-                }
-                return@Callable ScoredMove(it.algebraic, score)
+        moves = MoveGenerator(board).allRemainingMoves.map { ScoredMove(it, 0) }.toMutableList()
 
-            })
+        var depth = 1
+
+        //full root search
+        var value = rootSearch(depth, -INF, INF)
+
+        while (inTime && depth < maxDepth) {
+            depth++
+            value = windowSearch(depth, value)
         }
-
-        executor.invokeAll(tasks).forEach { rv.add(it.get()) }
-        //tasks.forEach { rv.add(it.call()) }
-        return rv
     }
 
-    private fun alphaBeta(alph: Int, beta: Int, depthLeft: Int, bitBoard: BitBoard): Int {
+    private fun windowSearch(depth: Int, value: Int): Int {
+
+        val alpha = value - 100
+        val beta = value + 100
+
+        var temp = rootSearch(depth, alpha, beta)
+        if (temp <= alpha || temp >= beta)
+            temp = rootSearch(depth, -INF, INF)
+        return temp
+    }
+
+    private fun sortMoves(moves: MutableList<ScoredMove>, current: Int) {
+        var high = current
+        var highScore = moves[high].score
+
+        for (i in current + 1..moves.lastIndex)
+            if (moves[i].score > highScore) {
+                high = i
+                highScore = moves[i].score
+            }
+
+        Collections.swap(moves, high, current)
+    }
+
+    private fun rootSearch(depth: Int, alph: Int, bet: Int): Int {
+
+        var value = -INF
+        var alpha = alph
+        var beta = bet
+        var score = 0
+
+        for (i in moves.indices) {
+            sortMoves(moves, i)
+
+            val move = moves[i].move
+            if (move.isCapture && move.captureType == Piece.KING) {
+                alpha = INF
+                bestMove = move
+            }
+
+            board.makeMove(move)
+
+            if (value === -INF)
+                score = -alphaBeta(-beta, -alpha, depth - 1)
+            else if (-alphaBeta(-alpha - 1, -alpha, depth - 1) > alpha)
+                score = -alphaBeta(-beta, -alpha, depth - 1)
+
+            if (score > value) value = score
+
+            board.unmakeMove()
+
+            if (score > alpha) {
+
+                bestMove = move
+
+                if (score > beta) return beta
+
+                alpha = score
+            }
+
+        }
+        return alpha
+    }
+
+
+    private fun alphaBeta(alph: Int, beta: Int, depthLeft: Int, bitBoard: BitBoard = board): Int {
         var alpha = alph
         var bestscore = -INF
 
@@ -91,7 +145,7 @@ class ChessEngine {
             else return eval(bitBoard)
         }
 
-        val moves = MoveGenerator(bitBoard).allRemainingMoves
+        val moves = MoveGenerator(bitBoard)//.allRemainingMoves
 
         nodes.incrementAndGet()
 
@@ -119,7 +173,7 @@ class ChessEngine {
 
         evalCalls.incrementAndGet()
 
-        if (depth == 0) return standPat
+        if (depth == 0 || inTime) return standPat
 
         if (standPat >= beta) return standPat
         if (alpha < standPat)
@@ -171,45 +225,36 @@ class ChessEngine {
             if (bestMoves.size == 0) {
                 return null
             }
-            return allMoves[(Math.random() * allMoves.size).toInt()].move
+            return allMoves[(Math.random() * allMoves.size).toInt()].algebraic()
         }
     }
 
-    private class ScoredMove(var move: String?, var score: Int) : Comparable<ScoredMove> {
+    private class ScoredMove(var move: BitBoard.BitBoardMove, var score: Int) : Comparable<ScoredMove> {
 
-        override fun toString(): String {
-            return move + "=" + score
-        }
+        override fun toString() = move.algebraic + "=" + score
+
+        fun algebraic() = move.algebraic
 
         override fun hashCode(): Int {
             val prime = 31
             var result = 1
-            result = prime * result + if (move == null) 0 else move!!.hashCode()
+            result = prime * result + move.hashCode()
             result = prime * result + score
             return result
         }
 
         override fun equals(other: Any?): Boolean {
-            if (this === other)
-                return true
-            if (other == null)
-                return false
-            if (javaClass != other.javaClass)
-                return false
+            if (this === other) return true
+            if (other == null) return false
+            if (javaClass != other.javaClass) return false
             val oth = other as ScoredMove
-            if (move == null) {
-                if (oth.move != null)
-                    return false
-            } else if (move != oth.move)
-                return false
-            if (score != oth.score)
-                return false
+            if (move != oth.move) return false
+            if (score != oth.score) return false
             return true
         }
 
-        override fun compareTo(other: ScoredMove): Int {
-            return score.compareTo(other.score)
-        }
+        override fun compareTo(other: ScoredMove) = score.compareTo(other.score)
+
     }
 
 
