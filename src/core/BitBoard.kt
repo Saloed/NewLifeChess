@@ -16,7 +16,7 @@ class BitBoard {
     var moveCount: Int = 0
     var halfMoveCount: Int = 0
         private set
-    //   private lateinit var lastMove: BitBoardMove
+    //   private lateinit var move: BitBoardMove
 
     //TODO: hash update
     private var hash: Long = 0
@@ -56,7 +56,7 @@ class BitBoard {
     private fun invalidateHistory() {
         moveCount = 0
         halfMoveCount = 0
-        //lastMove = BitBoardMove.nullMove
+        //move = BitBoardMove.nullMove
     }
 
     fun initialise(): BitBoard {
@@ -73,10 +73,12 @@ class BitBoard {
         flags = CASTLE_MASK
         moveCount = 0
         halfMoveCount = 0
-        //lastMove = BitBoardMove.nullMove
+        //move = BitBoardMove.nullMove
 
+        hash = ZHash.color
+        hash = hash xor ZHash.castle[CASTLE_MASK]
+        hash = hash xor ZHash.startHash()
 
-        //		System.out.println(toPrettyString(bitmaps[Piece.BLACK]));
         return this
     }
 
@@ -203,6 +205,7 @@ class BitBoard {
         bb.castlingOptions = castlingOptions
         bb.halfMoveCount = halfMoveCount
         bb.moveCount = moveCount
+        bb.hash = hash
         return bb
     }
 
@@ -260,11 +263,14 @@ class BitBoard {
             }
         }
         flags = flags and move.castleOff.inv()
+
+        hash = hash xor ZHash.castle[move.castleDir]
+        hash = hash xor ZHash.castle[flags and CASTLE_MASK]
     }
 
     fun makeMove(move: BitBoardMove) {
-        //move.previousMove = this.lastMove
-        //this.lastMove = move
+        //move.previousMove = this.move
+        //this.move = move
 
         move.flags = this.flags
         move.halfMoveCount = halfMoveCount
@@ -274,6 +280,8 @@ class BitBoard {
 
         player = player xor Piece.BLACK
         flags = flags and EN_PASSANT_MASK.inv()
+
+        hash = hash xor ZHash.color
 
         if (move.castle) {
             castle(move)
@@ -296,38 +304,51 @@ class BitBoard {
         if (move.enpassant) {
             flags = flags and EN_PASSANT_MASK.inv()
             flags = flags or move.epFile
+
+            hash = hash xor ZHash.enPassant[move.epFile]
+
         } else {
             flags = flags and EN_PASSANT_MASK.inv()
         }
         flags = flags and move.castleOff.inv()
 
+        hash = hash xor ZHash.squares[if (move.colorIndex == Piece.WHITE) 0 else 1][move.pieceIndex][toCoord(move.toSquare)]
+
     }
 
-    fun unmakeMove(lastMove: BitBoardMove) {
+
+    fun unmakeMove(move: BitBoardMove) {
         moveCount--
         player = player xor Piece.BLACK
 
-        if (lastMove.castle) {
-            castle(lastMove)
-            this.flags = lastMove.flags
-            this.halfMoveCount = lastMove.halfMoveCount
-            //this.lastMove = lastMove.previousMove
+        hash = hash xor ZHash.color
+
+        if (move.castle) {
+            castle(move)
+            this.flags = move.flags
+            this.halfMoveCount = move.halfMoveCount
+            //this.move = move.previousMove
             return
         }
 
-        if (lastMove.promote) {
-            bitmaps[lastMove.pieceIndex] = bitmaps[lastMove.pieceIndex] xor lastMove.toSquare
-            bitmaps[lastMove.promoteTo] = bitmaps[lastMove.promoteTo] xor lastMove.toSquare
+        if (move.promote) {
+            bitmaps[move.pieceIndex] = bitmaps[move.pieceIndex] xor move.toSquare
+            bitmaps[move.promoteTo] = bitmaps[move.promoteTo] xor move.toSquare
         }
-        bitmaps[lastMove.pieceIndex] = bitmaps[lastMove.pieceIndex] xor lastMove.xorPattern
-        bitmaps[lastMove.colorIndex] = bitmaps[lastMove.colorIndex] xor lastMove.xorPattern
-        if (lastMove.isCapture) {
-            bitmaps[lastMove.captureType] = bitmaps[lastMove.captureType] xor lastMove.captureSquare
-            bitmaps[lastMove.colorIndex xor 0x08] = bitmaps[lastMove.colorIndex xor 0x08] xor lastMove.captureSquare
+        bitmaps[move.pieceIndex] = bitmaps[move.pieceIndex] xor move.xorPattern
+        bitmaps[move.colorIndex] = bitmaps[move.colorIndex] xor move.xorPattern
+        if (move.isCapture) {
+            bitmaps[move.captureType] = bitmaps[move.captureType] xor move.captureSquare
+            bitmaps[move.colorIndex xor 0x08] = bitmaps[move.colorIndex xor 0x08] xor move.captureSquare
         }
-        this.flags = lastMove.flags
-        this.halfMoveCount = lastMove.halfMoveCount
-        //this.lastMove = lastMove.previousMove
+        if (move.enpassant) {
+            hash = hash xor ZHash.enPassant[move.epFile]
+        }
+        this.flags = move.flags
+        this.halfMoveCount = move.halfMoveCount
+
+        hash = hash xor ZHash.squares[if (move.colorIndex == Piece.WHITE) 0 else 1][move.pieceIndex][toCoord(move.toSquare)]
+        //this.move = move.previousMove
     }
 
     val cacheId: String
@@ -400,9 +421,9 @@ class BitBoard {
 //            val moves = arrayOfNulls<BitBoardMove>(halfMoveCount)
 //
 //            while (halfMoveCount > 1) {
-//                moves[halfMoveCount - 1] = lastMove
+//                moves[halfMoveCount - 1] = move
 //                unmakeMove()
-//                moves[halfMoveCount - 1] = lastMove
+//                moves[halfMoveCount - 1] = move
 //                unmakeMove()
 //                if (this.equalPosition(clone)) {
 //                    repeatCount++
@@ -748,6 +769,8 @@ class BitBoard {
             val zeros = java.lang.Long.numberOfTrailingZeros(bitmap)
             return intArrayOf(zeros and 0x07, zeros.ushr(3))
         }
+
+        fun toCoord(square: Long) = java.lang.Long.numberOfTrailingZeros(square)
 
         fun generateMove(
                 fromSquare: Long, toSquare: Long, colorIndex: Int, pieceIndex: Int): BitBoardMove {
