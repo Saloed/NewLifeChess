@@ -34,7 +34,7 @@ class TestEngine {
 
 fun main(arg: Array<String>) {
     val board = BitBoard().initialise()
-    val engine = ChessEngine(4, 2)
+    val engine = ChessEngine(6, 2)
     var bestMove: String?
     var nextMove: BitBoard.BitBoardMove
 

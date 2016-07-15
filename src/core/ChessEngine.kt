@@ -106,6 +106,7 @@ class ChessEngine {
             sortMoves(moves, i)
 
             val move = moves[i].move
+            //check for check
             if (move.isCapture && move.captureType == Piece.KING) {
                 alpha = INF
                 bestMove = move
@@ -118,6 +119,8 @@ class ChessEngine {
             else if (-alphaBeta(-alpha - 1, -alpha, depth - 1) > alpha)
                 score = -alphaBeta(-beta, -alpha, depth - 1)
 
+            moves[i].score = score
+
             if (score > value) value = score
 
             board.unmakeMove()
@@ -125,13 +128,12 @@ class ChessEngine {
             if (score > alpha) {
 
                 bestMove = move
+                alpha = score
 
                 if (score > beta) return beta
-
-                alpha = score
             }
-
         }
+
         return alpha
     }
 
@@ -145,7 +147,7 @@ class ChessEngine {
             else return eval(bitBoard)
         }
 
-        val moves = MoveGenerator(bitBoard)//.allRemainingMoves
+        val moves = MoveGenerator(bitBoard).allRemainingMoves
 
         nodes.incrementAndGet()
 
@@ -173,7 +175,7 @@ class ChessEngine {
 
         evalCalls.incrementAndGet()
 
-        if (depth == 0 || inTime) return standPat
+        if (depth == 0 || !inTime) return standPat
 
         if (standPat >= beta) return standPat
         if (alpha < standPat)
@@ -201,7 +203,7 @@ class ChessEngine {
     }
 
     companion object {
-        private val DEPTH = 5
+        private val DEPTH = 6
         private val Q_DEPTH = 2
 
         /**

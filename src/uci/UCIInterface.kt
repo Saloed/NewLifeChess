@@ -13,7 +13,7 @@ class UCIInterface private constructor() {
     private val commands = HashMap<String, Command>()
     private var terminate = false
     private var debug = false
-    private val engine = ChessEngine(5, 2)
+    private val engine = ChessEngine(6, 2)
     private val board = BitBoard()
 
     init {
