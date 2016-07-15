@@ -305,7 +305,7 @@ class BitBoard {
             flags = flags and EN_PASSANT_MASK.inv()
             flags = flags or move.epFile
 
-            hash = hash xor ZHash.enPassant[move.epFile]
+            hash = hash xor ZHash.enPassant[toCoord(move.toSquare)]
 
         } else {
             flags = flags and EN_PASSANT_MASK.inv()
@@ -342,7 +342,7 @@ class BitBoard {
             bitmaps[move.colorIndex xor 0x08] = bitmaps[move.colorIndex xor 0x08] xor move.captureSquare
         }
         if (move.enpassant) {
-            hash = hash xor ZHash.enPassant[move.epFile]
+            hash = hash xor ZHash.enPassant[toCoord(move.toSquare)]
         }
         this.flags = move.flags
         this.halfMoveCount = move.halfMoveCount
