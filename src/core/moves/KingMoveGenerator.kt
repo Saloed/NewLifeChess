@@ -20,7 +20,7 @@ class KingMoveGenerator : PieceMoveGenerator() {
             if (!CheckDetector.isPlayerJustMovedInCheck(bitBoard)) {
                 rv.add(bbMove)
             }
-            bitBoard.unmakeMove()
+            bitBoard.unmakeMove(bbMove)
         }
     }
 
@@ -39,7 +39,7 @@ class KingMoveGenerator : PieceMoveGenerator() {
             if (!CheckDetector.isPlayerJustMovedInCheck(bitBoard)) {
                 rv.add(bbMove)
             }
-            bitBoard.unmakeMove()
+            bitBoard.unmakeMove(bbMove)
         }
 
         val castleFlags = bitBoard.castlingOptions
@@ -86,7 +86,7 @@ class KingMoveGenerator : PieceMoveGenerator() {
         val bbMove = BitBoard.generateCastling(castleDir)
         bitBoard.makeMove(bbMove)
         val rv = !CheckDetector.isPlayerJustMovedInCheck(bitBoard)
-        bitBoard.unmakeMove()
+        bitBoard.unmakeMove(bbMove)
         return rv
     }
 
@@ -94,7 +94,7 @@ class KingMoveGenerator : PieceMoveGenerator() {
         val bbMove = BitBoard.generateMove(fromSquare, toSquare, player.toInt(), Piece.KING.toInt())
         bitBoard.makeMove(bbMove)
         val rv = CheckDetector.isPlayerJustMovedInCheck(bitBoard)
-        bitBoard.unmakeMove()
+        bitBoard.unmakeMove(bbMove)
         return rv
     }
 

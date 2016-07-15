@@ -43,7 +43,7 @@ abstract class StraightMoveGenerator : PieceMoveGenerator() {
                     rv.add(bbMove)
                 }
             }
-            bitBoard.unmakeMove()
+            bitBoard.unmakeMove(bbMove)
         }
     }
 
@@ -77,7 +77,7 @@ abstract class StraightMoveGenerator : PieceMoveGenerator() {
                 if (!CheckDetector.isPlayerJustMovedInCheck(bitBoard, !alreadyInCheck)) {
                     rv.add(bbMove)
                 }
-                bitBoard.unmakeMove()
+                bitBoard.unmakeMove(bbMove)
             }
 
             shift += distance

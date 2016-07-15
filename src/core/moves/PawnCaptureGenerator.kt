@@ -76,7 +76,7 @@ class PawnCaptureGenerator : PieceMoveGenerator() {
             //println(bitBoard.getBitmapColor(bitBoard.player))
             //println(java.lang.Long.toBinaryString( bitBoard.bitmapWhite))
             if (!CheckDetector.isPlayerJustMovedInCheck(bitBoard, !alreadyInCheck)) {
-                bitBoard.unmakeMove()
+                bitBoard.unmakeMove(bbMove)
                 if (captured and BitBoard.FINAL_RANKS == 0L) {
                     rv.add(bbMove)
                 } else {
@@ -90,7 +90,7 @@ class PawnCaptureGenerator : PieceMoveGenerator() {
                             nextPiece, captured, player.toInt(), bitBoard.getPiece(captured), Piece.KNIGHT))
                 }
             } else {
-                bitBoard.unmakeMove()
+                bitBoard.unmakeMove(bbMove)
             }
         }
     }

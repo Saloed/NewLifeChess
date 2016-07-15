@@ -31,7 +31,7 @@ class KnightMoveGenerator : PieceMoveGenerator() {
                 if (!CheckDetector.isPlayerJustMovedInCheck(bitBoard, !alreadyInCheck)) {
                     rv.add(bbMove)
                 }
-                bitBoard.unmakeMove()
+                bitBoard.unmakeMove(bbMove)
             }
         }
     }

@@ -80,7 +80,7 @@ class MoveTest {
             val cs = bitBoard.checksum
             bitBoard.makeMove(move)
             count += generateToDepth(depth - 1, bitBoard)
-            bitBoard.unmakeMove()
+            bitBoard.unmakeMove(move)
             if (x != bitBoard.flags || cs != bitBoard.checksum) {
                 throw IllegalStateException("make/unmake caused differences")
             }

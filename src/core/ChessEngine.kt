@@ -38,6 +38,9 @@ class ChessEngine {
     private lateinit var moves: MutableList<ScoredMove>
     private lateinit var bestMove: BitBoard.BitBoardMove
 
+    private val table = TransTable(1024 * 1024)
+    private var depth = 0
+
     fun getPreferredMove(bitBoard: BitBoard): String? {
         getScoredMoves(bitBoard)
         return bestMove.algebraic
@@ -54,31 +57,33 @@ class ChessEngine {
 
         inTime = true
 
+        table.clear()
+
         Timer("Chess Timer").schedule(timerTask { inTime = false }, TimeUnit.SECONDS.toMillis(25))
 
         board = bitBoard.clone()
 
         moves = MoveGenerator(board).allRemainingMoves.map { ScoredMove(it, 0) }.toMutableList()
 
-        var depth = 1
+        depth = 1
 
         //full root search
-        var value = rootSearch(depth, -INF, INF)
+        var value = rootSearch(-INF, INF)
 
         while (inTime && depth < maxDepth) {
             depth++
-            value = windowSearch(depth, value)
+            value = windowSearch(value)
         }
     }
 
-    private fun windowSearch(depth: Int, value: Int): Int {
+    private fun windowSearch(value: Int): Int {
 
         val alpha = value - 100
         val beta = value + 100
 
-        var temp = rootSearch(depth, alpha, beta)
+        var temp = rootSearch(alpha, beta)
         if (temp <= alpha || temp >= beta)
-            temp = rootSearch(depth, -INF, INF)
+            temp = rootSearch(-INF, INF)
         return temp
     }
 
@@ -95,12 +100,14 @@ class ChessEngine {
         Collections.swap(moves, high, current)
     }
 
-    private fun rootSearch(depth: Int, alph: Int, bet: Int): Int {
+    private fun rootSearch(alph: Int, bet: Int): Int {
 
         var value = -INF
         var alpha = alph
         var beta = bet
         var score = 0
+
+        //moves.sort()
 
         for (i in moves.indices) {
             sortMoves(moves, i)
@@ -115,15 +122,17 @@ class ChessEngine {
             board.makeMove(move)
 
             if (value === -INF)
-                score = -alphaBeta(-beta, -alpha, depth - 1)
-            else if (-alphaBeta(-alpha - 1, -alpha, depth - 1) > alpha)
-                score = -alphaBeta(-beta, -alpha, depth - 1)
-
+                score = -alphaBeta(-beta, -alpha, 0)
+            else {
+                score = -alphaBeta(-alpha - 1, -alpha, 0)
+                if (score > alpha)
+                    score = -alphaBeta(-beta, -alpha, 0)
+            }
             moves[i].score = score
 
             if (score > value) value = score
 
-            board.unmakeMove()
+            board.unmakeMove(move)
 
             if (score > alpha) {
 
@@ -138,11 +147,11 @@ class ChessEngine {
     }
 
 
-    private fun alphaBeta(alph: Int, beta: Int, depthLeft: Int, bitBoard: BitBoard = board): Int {
+    private fun alphaBeta(alph: Int, beta: Int, currentDepth: Int, bitBoard: BitBoard = board): Int {
         var alpha = alph
         var bestscore = -INF
 
-        if (depthLeft == 0) {
+        if (currentDepth == depth) {
             if (quiesce) return quiesce(alpha, beta, bitBoard, qdepth)
             else return eval(bitBoard)
         }
@@ -153,29 +162,33 @@ class ChessEngine {
 
         moves.forEach {
             bitBoard.makeMove(it)
-            val score = -alphaBeta(-beta, -alpha, depthLeft - 1, bitBoard)
-            bitBoard.unmakeMove()
+            val score = -alphaBeta(-beta, -alpha, currentDepth + 1, bitBoard)
+            bitBoard.unmakeMove(it)
 
-            if (score >= beta)
+            if (score >= beta) {
+                table.put(bitBoard, TTEntry(score, currentDepth))
                 return score  // fail-soft beta-cutoff
+            }
             if (score > bestscore) {
                 bestscore = score
                 if (score > alpha)
                     alpha = score
             }
         }
+
+        table.put(bitBoard, TTEntry(bestscore, currentDepth))
         return bestscore
     }
 
     private fun eval(bitBoard: BitBoard) = gameScorer.score(bitBoard)
 
-    private fun quiesce(alph: Int, beta: Int, bitBoard: BitBoard, depth: Int): Int {
+    private fun quiesce(alph: Int, beta: Int, bitBoard: BitBoard, depthLeft: Int): Int {
         var alpha = alph
         val standPat = eval(bitBoard)
 
         evalCalls.incrementAndGet()
 
-        if (depth == 0 || !inTime) return standPat
+        if (depthLeft == 0 || !inTime) return standPat
 
         if (standPat >= beta) return standPat
         if (alpha < standPat)
@@ -187,12 +200,11 @@ class ChessEngine {
 
         qnodes.incrementAndGet()
 
-
         captures.forEach {
 
             bitBoard.makeMove(it)
-            val score = -quiesce(-beta, -alpha, bitBoard, depth - 1)
-            bitBoard.unmakeMove()
+            val score = -quiesce(-beta, -alpha, bitBoard, depthLeft - 1)
+            bitBoard.unmakeMove(it)
 
             if (score >= beta)
                 return beta;

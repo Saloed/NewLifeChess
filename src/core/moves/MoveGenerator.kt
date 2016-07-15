@@ -84,7 +84,7 @@ class MoveGenerator(private val bitBoard: BitBoard) : Iterator<BitBoardMove> {
             queuedMoves.clear()
             generators.forEach { it.generateMoves(bitBoard, inCheck, potentialPins, queuedMoves) }
             var index = 0
-            queuedMoves.forEach { it.id = index; index++ }
+            //queuedMoves.forEach { it.id = index; index++ }
             return queuedMoves
         }
 

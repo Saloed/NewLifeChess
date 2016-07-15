@@ -1,12 +1,11 @@
 import core.BitBoard
 import core.ChessEngine
-import core.moves.MoveGenerator
 import core.moves.PawnCaptureGenerator
-import core.moves.PawnMoveGenerator
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import uci.FENParser
 import java.util.*
+import kotlin.system.exitProcess
 
 class TestEngine {
     @Test
@@ -34,7 +33,7 @@ class TestEngine {
 
 fun main(arg: Array<String>) {
     val board = BitBoard().initialise()
-    val engine = ChessEngine(6, 2)
+    val engine = ChessEngine(5, 2)
     var bestMove: String?
     var nextMove: BitBoard.BitBoardMove
 
@@ -53,5 +52,6 @@ fun main(arg: Array<String>) {
                 "// NPS ${(engine.nodes.get() * 1000) / decisionTime}  QNPS  ${(engine.qnodes.get() * 1000) / decisionTime} " +
                 "// TotalEvals ${engine.evalCalls} EPS ${(engine.evalCalls.get() * 1000) / decisionTime}")
     }
-    engine.stopExecutor()
+    //engine.stopExecutor()
+    exitProcess(0)
 }

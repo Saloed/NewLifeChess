@@ -48,7 +48,7 @@ class PawnMoveGenerator : PieceMoveGenerator() {
                         rv.add(bbMove)
                     }
                 }
-                bitBoard.unmakeMove()
+                bitBoard.unmakeMove(bbMove)
 
                 if (doubleMove) {
                     val pushTwo = BitBoard.generateDoubleAdvanceMove(
@@ -57,7 +57,7 @@ class PawnMoveGenerator : PieceMoveGenerator() {
                     if (!CheckDetector.isPlayerJustMovedInCheck(bitBoard, !alreadyInCheck)) {
                         rv.add(pushTwo)
                     }
-                    bitBoard.unmakeMove()
+                    bitBoard.unmakeMove(pushTwo)
                 }
             }
         }

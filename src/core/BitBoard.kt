@@ -16,7 +16,7 @@ class BitBoard {
     var moveCount: Int = 0
     var halfMoveCount: Int = 0
         private set
-    private lateinit var lastMove: BitBoardMove
+    //   private lateinit var lastMove: BitBoardMove
 
     //TODO: hash update
     private var hash: Long = 0
@@ -56,7 +56,7 @@ class BitBoard {
     private fun invalidateHistory() {
         moveCount = 0
         halfMoveCount = 0
-        lastMove = BitBoardMove.nullMove
+        //lastMove = BitBoardMove.nullMove
     }
 
     fun initialise(): BitBoard {
@@ -73,7 +73,7 @@ class BitBoard {
         flags = CASTLE_MASK
         moveCount = 0
         halfMoveCount = 0
-        lastMove = BitBoardMove.nullMove
+        //lastMove = BitBoardMove.nullMove
 
 
         //		System.out.println(toPrettyString(bitmaps[Piece.BLACK]));
@@ -263,8 +263,8 @@ class BitBoard {
     }
 
     fun makeMove(move: BitBoardMove) {
-        move.previousMove = this.lastMove
-        this.lastMove = move
+        //move.previousMove = this.lastMove
+        //this.lastMove = move
 
         move.flags = this.flags
         move.halfMoveCount = halfMoveCount
@@ -303,7 +303,7 @@ class BitBoard {
 
     }
 
-    fun unmakeMove() {
+    fun unmakeMove(lastMove: BitBoardMove) {
         moveCount--
         player = player xor Piece.BLACK
 
@@ -311,7 +311,7 @@ class BitBoard {
             castle(lastMove)
             this.flags = lastMove.flags
             this.halfMoveCount = lastMove.halfMoveCount
-            this.lastMove = lastMove.previousMove
+            //this.lastMove = lastMove.previousMove
             return
         }
 
@@ -327,7 +327,7 @@ class BitBoard {
         }
         this.flags = lastMove.flags
         this.halfMoveCount = lastMove.halfMoveCount
-        this.lastMove = lastMove.previousMove
+        //this.lastMove = lastMove.previousMove
     }
 
     val cacheId: String
@@ -388,31 +388,31 @@ class BitBoard {
             return RES_NO_RESULT
         }
 
-    private // No point in checking until at least 8 half moves made...
-    val repeatedCount: Int
-        get() {
-            if (halfMoveCount < 8) {
-                return 0
-            }
-
-            var repeatCount = 0
-            val clone = this.clone()
-            val moves = arrayOfNulls<BitBoardMove>(halfMoveCount)
-
-            while (halfMoveCount > 1) {
-                moves[halfMoveCount - 1] = lastMove
-                unmakeMove()
-                moves[halfMoveCount - 1] = lastMove
-                unmakeMove()
-                if (this.equalPosition(clone)) {
-                    repeatCount++
-                }
-            }
-            for (i in halfMoveCount..moves.size - 1) {
-                makeMove(moves[i]!!)
-            }
-            return repeatCount + 1
-        }
+//    private // No point in checking until at least 8 half moves made...
+//    val repeatedCount: Int
+//        get() {
+//            if (halfMoveCount < 8) {
+//                return 0
+//            }
+//
+//            var repeatCount = 0
+//            val clone = this.clone()
+//            val moves = arrayOfNulls<BitBoardMove>(halfMoveCount)
+//
+//            while (halfMoveCount > 1) {
+//                moves[halfMoveCount - 1] = lastMove
+//                unmakeMove()
+//                moves[halfMoveCount - 1] = lastMove
+//                unmakeMove()
+//                if (this.equalPosition(clone)) {
+//                    repeatCount++
+//                }
+//            }
+//            for (i in halfMoveCount..moves.size - 1) {
+//                makeMove(moves[i]!!)
+//            }
+//            return repeatCount + 1
+//        }
 
     private fun equalPosition(bb: BitBoard): Boolean {
         return bb.bitmaps[0] == bitmaps[0] && bb.bitmaps[1] == bitmaps[1]
@@ -523,7 +523,7 @@ class BitBoard {
         var enpassant = false
         var castleOff: Int = 0
         var halfMoveCount: Int = 0
-        lateinit var previousMove: BitBoardMove
+        // lateinit var previousMove: BitBoardMove
 
         var score: Int = 0
 
