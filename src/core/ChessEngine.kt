@@ -152,8 +152,9 @@ class ChessEngine {
         var bestscore = -INF
 
         if (currentDepth == depth) {
-            if (quiesce) return quiesce(alpha, beta, bitBoard, qdepth)
-            else return eval(bitBoard)
+            if (quiesce) return quiesce(alpha, beta, depthLeft = qdepth)
+            else
+                return eval(bitBoard)
         }
 
         val moves = MoveGenerator(bitBoard).allRemainingMoves
@@ -182,7 +183,7 @@ class ChessEngine {
 
     private fun eval(bitBoard: BitBoard) = gameScorer.score(bitBoard)
 
-    private fun quiesce(alph: Int, beta: Int, bitBoard: BitBoard, depthLeft: Int): Int {
+    private fun quiesce(alph: Int, beta: Int, bitBoard: BitBoard = board, depthLeft: Int): Int {
         var alpha = alph
         val standPat = eval(bitBoard)
 

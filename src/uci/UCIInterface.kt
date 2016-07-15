@@ -6,6 +6,7 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.util.*
+import kotlin.system.exitProcess
 
 
 class UCIInterface private constructor() {
@@ -207,6 +208,8 @@ class UCIInterface private constructor() {
             } finally {
                 uciInterface.engine.stopExecutor()
             }
+
+            exitProcess(0)
 
         }
     }
