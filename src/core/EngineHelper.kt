@@ -1,6 +1,7 @@
 package core
 
 import model.Piece
+import util.and
 
 object EngineHelper {
 
@@ -27,11 +28,11 @@ object EngineHelper {
         return coords[file1 shl 3 or rank1] + coords[file2 shl 3 or rank2]
     }
 
-    fun getType(piece: Int): Int {
+    fun getType(piece: Byte): Byte {
         return (piece and Piece.MASK_TYPE)
     }
 
-    fun getColor(piece: Int): Int {
+    fun getColor(piece: Byte): Byte {
         return (piece and Piece.MASK_COLOR)
     }
 

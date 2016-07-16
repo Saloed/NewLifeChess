@@ -39,7 +39,7 @@ object CheckDetector {
      * bishop, rook or queen it is not necessary to check for checks by enemy pawns,
      * knights or king.
      */
-    private fun inCheck(bitBoard: BitBoard, color: Int, pinCheckOnly: Boolean): Boolean {
+    private fun inCheck(bitBoard: BitBoard, color: Byte, pinCheckOnly: Boolean): Boolean {
         val kingMap = bitBoard.getBitmapColor(color) and bitBoard.bitmapKings
         /*println("color " + bitBoard.getBitmapColor(color))
         println("kingmap " + bitBoard.bitmapKings)
@@ -126,7 +126,7 @@ object CheckDetector {
         return false
     }
 
-    private fun detectLineAttackingPiece(bitBoard: BitBoard, kingPos: IntArray, dir: IntArray, color: Int, attackers: Long)
+    private fun detectLineAttackingPiece(bitBoard: BitBoard, kingPos: IntArray, dir: IntArray, color: Byte, attackers: Long)
             : Boolean {
         var nFile = kingPos[0] + dir[0]
         var nRank = kingPos[1] + dir[1]

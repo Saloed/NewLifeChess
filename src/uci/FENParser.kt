@@ -3,6 +3,9 @@ package uci
 import core.BitBoard
 import core.EngineHelper
 import model.Piece
+import util.ZERO
+import util.and
+import util.or
 
 
 object FENParser {
@@ -34,16 +37,16 @@ object FENParser {
     private fun generateCastling(board: BitBoard): String {
         val fen = StringBuilder()
 
-        if (board.castlingOptions and BitBoard.CASTLE_WKS != 0) {
+        if (board.castlingOptions and BitBoard.CASTLE_WKS != ZERO) {
             fen.append("K")
         }
-        if (board.castlingOptions and BitBoard.CASTLE_WQS != 0) {
+        if (board.castlingOptions and BitBoard.CASTLE_WQS != ZERO) {
             fen.append("Q")
         }
-        if (board.castlingOptions and BitBoard.CASTLE_BKS != 0) {
+        if (board.castlingOptions and BitBoard.CASTLE_BKS != ZERO) {
             fen.append("k")
         }
-        if (board.castlingOptions and BitBoard.CASTLE_BQS != 0) {
+        if (board.castlingOptions and BitBoard.CASTLE_BQS != ZERO) {
             fen.append("q")
         }
         if (fen.length == 0) {
@@ -60,7 +63,9 @@ object FENParser {
             var emptyCount = 0
             for (file in 0..7) {
                 val pos = 1L shl (rank shl 3) shl file
-                val symbol = getSymbol(((if ((board.bitmapBlack and pos) == 0L) Piece.WHITE else Piece.BLACK) or board.getPiece(pos)))
+                val symbol = getSymbol((
+                        (if ((board.bitmapBlack and pos) == 0L) Piece.WHITE else Piece.BLACK)
+                                or board.getPiece(pos)))
                 if (symbol == null) {
                     emptyCount++
                 } else {
@@ -82,7 +87,7 @@ object FENParser {
         return fen.toString()
     }
 
-    private fun getSymbol(piece: Int): String? {
+    private fun getSymbol(piece: Byte): String? {
 
         val pieceType = EngineHelper.getType(piece)
 

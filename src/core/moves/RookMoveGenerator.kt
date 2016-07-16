@@ -23,6 +23,6 @@ class RookMoveGenerator : StraightMoveGenerator() {
         }
     }
 
-    override val pieceType: Int
+    override val pieceType: Byte
         get() = Piece.ROOK
 }

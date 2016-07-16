@@ -27,6 +27,6 @@ class BishopMoveGenerator : StraightMoveGenerator() {
         }
     }
 
-    override val pieceType: Int
+    override val pieceType: Byte
         get() = Piece.BISHOP
 }

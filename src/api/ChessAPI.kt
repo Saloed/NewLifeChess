@@ -9,8 +9,8 @@ import java.util.*
 
 class ChessAPI {
 
-    private var depth: Int = 3;
-    private var qdepth: Int = 0;
+    private var depth: Int = 3
+    private var qdepth: Int = 0
 
     private var board = BitBoard()
 
@@ -67,14 +67,14 @@ class ChessAPI {
             if (board.player != Piece.WHITE) {
                 board = movesHistory.pop().board
             }
-            return true;
+            return true
         }
-        return false;
+        return false
     }
 
     fun getHistory() = movesHistory
 
-    fun getLastMove() = movesHistory.peek()
+    fun getLastMove(): HistoryMove? = movesHistory.peek()
 
     fun setPosition(fen: String) {
         board = FENParser.loadPosition(fen, board)
@@ -134,7 +134,7 @@ class ChessAPI {
 
     private fun indexToPosition(i: Int) = (1L shl i)
 
-    data class SquareAndPiece(val file: Int, val rank: Int, val piece: Int, val color: Int)
+    data class SquareAndPiece(val file: Int, val rank: Int, val piece: Byte, val color: Byte)
     data class HistoryMove(val board: BitBoard)
 
 

@@ -83,7 +83,7 @@ class MoveGenerator(private val bitBoard: BitBoard) : Iterator<BitBoardMove> {
         get() {
             queuedMoves.clear()
             generators.forEach { it.generateMoves(bitBoard, inCheck, potentialPins, queuedMoves) }
-            var index = 0
+            //var index = 0
             //queuedMoves.forEach { it.id = index; index++ }
             return queuedMoves
         }
@@ -115,8 +115,8 @@ class MoveGenerator(private val bitBoard: BitBoard) : Iterator<BitBoardMove> {
             MASTER = Collections.unmodifiableList(list)
         }
 
-        private val DIR_LINE = intArrayOf(Bitmaps.BM_U.toInt(), Bitmaps.BM_D.toInt(), Bitmaps.BM_L.toInt(), Bitmaps.BM_R.toInt())
-        private val DIR_DIAG = intArrayOf(Bitmaps.BM_UR.toInt(), Bitmaps.BM_DR.toInt(), Bitmaps.BM_UL.toInt(), Bitmaps.BM_DL.toInt())
+        private val DIR_LINE = intArrayOf(Bitmaps.BM_U, Bitmaps.BM_D, Bitmaps.BM_L, Bitmaps.BM_R)
+        private val DIR_DIAG = intArrayOf(Bitmaps.BM_UR, Bitmaps.BM_DR, Bitmaps.BM_UL, Bitmaps.BM_DL)
 
         fun getPossibleMoves(bitBoard: BitBoard): Map<String, MutableList<String>> {
             val moves = HashMap<String, MutableList<String>>()

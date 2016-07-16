@@ -3,14 +3,14 @@ package core
 import core.moves.MoveGenerator
 import core.moves.ShiftStrategy
 import model.Piece
-import java.util.*
 import util.*
+import java.util.*
 
 class BitBoard {
 
     private var bitmaps = LongArray(9)
     var player: Byte = Piece.WHITE
-    var flags: Int = 0
+    var flags: Byte = 0
         private set
 
     var moveCount: Int = 0
@@ -20,7 +20,7 @@ class BitBoard {
 
     private var hash: Long = 0
 
-    var castlingOptions: Int
+    var castlingOptions: Byte
         get() = (flags and CASTLE_MASK)
         set(options) {
             flags = flags and CASTLE_MASK.inv()
@@ -82,7 +82,7 @@ class BitBoard {
     }
 
     val isEnPassant: Boolean
-        get() = flags and IS_EN_PASSANT != 0
+        get() = flags and IS_EN_PASSANT != ZERO
 
     var moveNumber: Int
         get() = (moveCount / 2 + 1)
@@ -94,12 +94,12 @@ class BitBoard {
         }
 
     var enPassantFile: Int
-        get() = (flags and EN_PASSANT_MASK).ushr(5)
+        get() = (flags and EN_PASSANT_MASK).toInt().ushr(5)
         set(file) {
             flags = flags and EN_PASSANT_MASK.inv()
             if (file != -1) {
                 flags = flags or IS_EN_PASSANT
-                flags = flags or (file shl 5)
+                flags = flags or (file shl 5).toByte()
             }
         }
 
@@ -124,7 +124,7 @@ class BitBoard {
         buf.append("bishops ").append(toPrettyString(bitmaps[MAP_BISHOPS])).append("\n")
         buf.append("queens  ").append(toPrettyString(bitmaps[MAP_QUEENS])).append("\n")
         buf.append("kings   ").append(toPrettyString(bitmaps[MAP_KINGS])).append("\n")
-        buf.append("flags   ").append(Integer.toBinaryString(flags and 0xFF))
+        buf.append("flags   ").append(Integer.toBinaryString(flags.toInt() and 0xFF))
         buf.append(", player = ").append(player)
 
         return buf.toString()
@@ -143,7 +143,7 @@ class BitBoard {
         bitmaps[7] = 0
 
         player = player xor Piece.BLACK
-        val newFlags: Int = (flags and 0x03 shl 2 or (flags and 0x0c).ushr(2))
+        val newFlags: Byte = (flags and 0x03 shl 2 or (flags and 0x0c).ushr(2))
         flags = flags and CASTLE_MASK.inv()
         flags = flags or newFlags
 
@@ -261,7 +261,7 @@ class BitBoard {
                 bitmaps[MAP_ROOKS] = bitmaps[MAP_ROOKS] xor 648518346341351424L
             }
         }
-        flags = flags and move.castleOff.toInt().inv()
+        flags = flags and move.castleOff.inv()
 
         hash = hash xor ZHash.castle[move.castleDir]
         hash = hash xor ZHash.castle[flags and CASTLE_MASK]
@@ -302,14 +302,14 @@ class BitBoard {
         }
         if (move.enpassant) {
             flags = flags and EN_PASSANT_MASK.inv()
-            flags = flags or move.epFile
+            flags = flags or move.epFile.toByte()
 
             hash = hash xor ZHash.enPassant[toCoord(move.toSquare)]
 
         } else {
             flags = flags and EN_PASSANT_MASK.inv()
         }
-        flags = flags and move.castleOff.toInt().inv()
+        flags = flags and move.castleOff.inv()
 
         hash = hash xor ZHash.squares[if (move.colorIndex == Piece.WHITE) 0 else 1][move.pieceIndex][toCoord(move.toSquare)]
 
@@ -536,7 +536,7 @@ class BitBoard {
         var castleDir: Byte = 0
         var epFile: Int = 0
 
-        var flags: Int = 0
+        var flags: Byte = 0
 
         var xorPattern: Long = 0
         var isCapture = false
@@ -601,7 +601,7 @@ class BitBoard {
         }
 
         override fun equals(other: Any?): Boolean {
-            if (other == null) return false;
+            if (other == null) return false
             if (other !is BitBoardMove) return false
             if (other.fromSquare != fromSquare) return false
             if (other.toSquare != toSquare) return false
@@ -680,29 +680,29 @@ class BitBoard {
     }
 
     companion object {
-        val RES_NO_RESULT = "*"
-        val RES_WHITE_WIN = "1-0"
-        val RES_BLACK_WIN = "0-1"
-        val RES_DRAW = "1/2-1/2"
+        const val RES_NO_RESULT = "*"
+        const val RES_WHITE_WIN = "1-0"
+        const val RES_BLACK_WIN = "0-1"
+        const val RES_DRAW = "1/2-1/2"
 
-        val FINAL_RANKS = 255L shl 56 or 255L
-        private val MAP_WHITE = Piece.WHITE
-        private val MAP_BLACK = Piece.BLACK
+        const val FINAL_RANKS = 255L shl 56 or 255L
+        const private val MAP_WHITE = Piece.WHITE
+        const private val MAP_BLACK = Piece.BLACK
 
-        private val MAP_PAWNS = Piece.PAWN
-        private val MAP_KNIGHTS = Piece.KNIGHT
-        private val MAP_BISHOPS = Piece.BISHOP
-        private val MAP_ROOKS = Piece.ROOK
-        private val MAP_QUEENS = Piece.QUEEN
-        private val MAP_KINGS = Piece.KING
+        const private val MAP_PAWNS = Piece.PAWN
+        const private val MAP_KNIGHTS = Piece.KNIGHT
+        const private val MAP_BISHOPS = Piece.BISHOP
+        const private val MAP_ROOKS = Piece.ROOK
+        const private val MAP_QUEENS = Piece.QUEEN
+        const private val MAP_KINGS = Piece.KING
 
-        val CASTLE_WQS: Byte = 0x01
-        val CASTLE_WKS: Byte = 0x02
-        val CASTLE_BQS: Byte = 0x04
-        val CASTLE_BKS: Byte = 0x08
-        private val IS_EN_PASSANT = 0x10
-        private val EN_PASSANT_MASK = 0xF0
-        private val CASTLE_MASK: Int = 0x0F
+        const val CASTLE_WQS: Byte = 0x01
+        const val CASTLE_WKS: Byte = 0x02
+        const val CASTLE_BQS: Byte = 0x04
+        const val CASTLE_BKS: Byte = 0x08
+        const private val IS_EN_PASSANT: Byte = 0x10
+        private val EN_PASSANT_MASK: Byte = F0
+        const private val CASTLE_MASK: Byte = 0x0F
 
         fun getShiftStrategy(colour: Byte): ShiftStrategy {
             return if (colour == Piece.WHITE) ShiftStrategy.WHITE else ShiftStrategy.BLACK
@@ -782,7 +782,7 @@ class BitBoard {
                 fromSquare: Long, toSquare: Long, colorIndex: Byte): BitBoardMove {
             val move = BitBoardMove(fromSquare, toSquare, colorIndex, Piece.PAWN)
             move.enpassant = true
-            move.epFile = (java.lang.Long.numberOfTrailingZeros(fromSquare) and 0x07 shl 5 or IS_EN_PASSANT)
+            move.epFile = (java.lang.Long.numberOfTrailingZeros(fromSquare) and 0x07 shl 5 or IS_EN_PASSANT.toInt())
             return move
         }
 
@@ -827,7 +827,7 @@ class BitBoard {
             return BitBoardMove(castleDir)
         }
 
-        public fun coordToPosition(coord: String): Long {
+        fun coordToPosition(coord: String): Long {
             return 1L shl (EngineHelper.FILES.indexOf(coord[0]) or (EngineHelper.RANKS.indexOf(coord[1]) shl 3))
         }
 

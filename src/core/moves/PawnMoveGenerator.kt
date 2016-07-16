@@ -9,7 +9,7 @@ class PawnMoveGenerator : PieceMoveGenerator() {
 
     override fun generateMoves(bitBoard: BitBoard, alreadyInCheck: Boolean, potentialPins: Long, rv: MutableList<BitBoardMove>) {
         val playerIdx = bitBoard.player
-        val shiftStrategy = BitBoard.getShiftStrategy(playerIdx.toInt())
+        val shiftStrategy = BitBoard.getShiftStrategy(playerIdx)
         val myPawns = bitBoard.bitmapPawns and bitBoard.getBitmapColor(playerIdx)
 
         // Calculate pawns with nothing in front of them
@@ -30,20 +30,20 @@ class PawnMoveGenerator : PieceMoveGenerator() {
             val toSquare = shiftStrategy.shiftForwardOneRank(nextPawn)
             if (safeFromCheck) {
                 if (toSquare and BitBoard.FINAL_RANKS != 0L) {
-                    rv.addAll(BitBoard.generatePromotions(nextPawn, toSquare, playerIdx.toInt()))
+                    rv.addAll(BitBoard.generatePromotions(nextPawn, toSquare, playerIdx))
                 } else {
-                    rv.add(BitBoard.generateMove(nextPawn, toSquare, playerIdx.toInt(), Piece.PAWN.toInt()))
+                    rv.add(BitBoard.generateMove(nextPawn, toSquare, playerIdx, Piece.PAWN))
                     if (doubleMove) {
                         rv.add(BitBoard.generateDoubleAdvanceMove(
-                                nextPawn, shiftStrategy.shiftForward(nextPawn, 2), playerIdx.toInt()))
+                                nextPawn, shiftStrategy.shiftForward(nextPawn, 2), playerIdx))
                     }
                 }
             } else {
-                val bbMove = BitBoard.generateMove(nextPawn, toSquare, playerIdx.toInt(), Piece.PAWN.toInt())
+                val bbMove = BitBoard.generateMove(nextPawn, toSquare, playerIdx, Piece.PAWN)
                 bitBoard.makeMove(bbMove)
                 if (!CheckDetector.isPlayerJustMovedInCheck(bitBoard, !alreadyInCheck)) {
                     if (toSquare and BitBoard.FINAL_RANKS != 0L) {
-                        rv.addAll(BitBoard.generatePromotions(nextPawn, toSquare, playerIdx.toInt()))
+                        rv.addAll(BitBoard.generatePromotions(nextPawn, toSquare, playerIdx))
                     } else {
                         rv.add(bbMove)
                     }
@@ -52,7 +52,7 @@ class PawnMoveGenerator : PieceMoveGenerator() {
 
                 if (doubleMove) {
                     val pushTwo = BitBoard.generateDoubleAdvanceMove(
-                            nextPawn, shiftStrategy.shiftForward(nextPawn, 2), playerIdx.toInt())
+                            nextPawn, shiftStrategy.shiftForward(nextPawn, 2), playerIdx)
                     bitBoard.makeMove(pushTwo)
                     if (!CheckDetector.isPlayerJustMovedInCheck(bitBoard, !alreadyInCheck)) {
                         rv.add(pushTwo)

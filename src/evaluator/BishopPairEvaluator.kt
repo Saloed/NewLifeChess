@@ -12,7 +12,7 @@ class BishopPairEvaluator : PositionEvaluator {
         return score
     }
 
-    private fun getScore(bitBoard: BitBoard, color: Int): Int {
+    private fun getScore(bitBoard: BitBoard, color: Byte): Int {
         val colorMap = bitBoard.getBitmapColor(color)
         if (java.lang.Long.bitCount(colorMap and bitBoard.bitmapBishops) >= 2) {
             return if (colorMap and bitBoard.bitmapQueens == 0L) 150 else 300

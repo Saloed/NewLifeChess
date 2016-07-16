@@ -4,6 +4,8 @@ import core.BitBoard
 import core.BitBoard.BitBoardMove
 import core.CheckDetector
 import model.Piece
+import util.ZERO
+import util.and
 
 class KingMoveGenerator : PieceMoveGenerator() {
 
@@ -34,7 +36,7 @@ class KingMoveGenerator : PieceMoveGenerator() {
         while (emptyMoves != 0L) {
             val nextMove = java.lang.Long.lowestOneBit(emptyMoves)
             emptyMoves = emptyMoves xor nextMove
-            val bbMove = BitBoard.generateMove(king, nextMove, player.toInt(), Piece.KING.toInt())
+            val bbMove = BitBoard.generateMove(king, nextMove, player, Piece.KING)
             bitBoard.makeMove(bbMove)
             if (!CheckDetector.isPlayerJustMovedInCheck(bitBoard)) {
                 rv.add(bbMove)
@@ -44,14 +46,14 @@ class KingMoveGenerator : PieceMoveGenerator() {
 
         val castleFlags = bitBoard.castlingOptions
         if (player == Piece.WHITE && !alreadyInCheck) {
-            if (castleFlags and BitBoard.CASTLE_WKS != 0 && bitBoard.allPieces and EMPTY_WKS == 0L) {
+            if (castleFlags and BitBoard.CASTLE_WKS != ZERO && bitBoard.allPieces and EMPTY_WKS == 0L) {
                 if (!isIntermediateCheck(bitBoard, king, king shl 1, player)) {
                     if (isCastlingPossible(bitBoard, player, BitBoard.CASTLE_WKS)) {
                         rv.add(BitBoard.generateCastling(BitBoard.CASTLE_WKS))
                     }
                 }
             }
-            if (castleFlags and BitBoard.CASTLE_WQS != 0 && bitBoard.allPieces and EMPTY_WQS == 0L) {
+            if (castleFlags and BitBoard.CASTLE_WQS != ZERO && bitBoard.allPieces and EMPTY_WQS == 0L) {
                 if (!isIntermediateCheck(bitBoard, king, king.ushr(1), player)) {
                     if (isCastlingPossible(bitBoard, player, BitBoard.CASTLE_WQS)) {
                         rv.add(BitBoard.generateCastling(BitBoard.CASTLE_WQS))
@@ -59,14 +61,14 @@ class KingMoveGenerator : PieceMoveGenerator() {
                 }
             }
         } else if (player == Piece.BLACK && !alreadyInCheck) {
-            if (castleFlags and BitBoard.CASTLE_BKS != 0 && bitBoard.allPieces and EMPTY_BKS == 0L) {
+            if (castleFlags and BitBoard.CASTLE_BKS != ZERO && bitBoard.allPieces and EMPTY_BKS == 0L) {
                 if (!isIntermediateCheck(bitBoard, king, king shl 1, player)) {
                     if (isCastlingPossible(bitBoard, player, BitBoard.CASTLE_BKS)) {
                         rv.add(BitBoard.generateCastling(BitBoard.CASTLE_BKS))
                     }
                 }
             }
-            if (castleFlags and BitBoard.CASTLE_BQS != 0 && bitBoard.allPieces and EMPTY_BQS == 0L) {
+            if (castleFlags and BitBoard.CASTLE_BQS != ZERO && bitBoard.allPieces and EMPTY_BQS == 0L) {
                 if (!isIntermediateCheck(bitBoard, king, king.ushr(1), player)) {
                     if (isCastlingPossible(bitBoard, player, BitBoard.CASTLE_BQS)) {
                         rv.add(BitBoard.generateCastling(BitBoard.CASTLE_BQS))
@@ -82,7 +84,7 @@ class KingMoveGenerator : PieceMoveGenerator() {
         }
     }
 
-    private fun isCastlingPossible(bitBoard: BitBoard, player: Int, castleDir: Int): Boolean {
+    private fun isCastlingPossible(bitBoard: BitBoard, player: Byte, castleDir: Byte): Boolean {
         val bbMove = BitBoard.generateCastling(castleDir)
         bitBoard.makeMove(bbMove)
         val rv = !CheckDetector.isPlayerJustMovedInCheck(bitBoard)
@@ -90,8 +92,8 @@ class KingMoveGenerator : PieceMoveGenerator() {
         return rv
     }
 
-    private fun isIntermediateCheck(bitBoard: BitBoard, fromSquare: Long, toSquare: Long, player: Int): Boolean {
-        val bbMove = BitBoard.generateMove(fromSquare, toSquare, player.toInt(), Piece.KING.toInt())
+    private fun isIntermediateCheck(bitBoard: BitBoard, fromSquare: Long, toSquare: Long, player: Byte): Boolean {
+        val bbMove = BitBoard.generateMove(fromSquare, toSquare, player, Piece.KING)
         bitBoard.makeMove(bbMove)
         val rv = CheckDetector.isPlayerJustMovedInCheck(bitBoard)
         bitBoard.unmakeMove(bbMove)

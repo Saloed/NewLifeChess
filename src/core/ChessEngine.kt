@@ -208,9 +208,9 @@ class ChessEngine {
             bitBoard.unmakeMove(it)
 
             if (score >= beta)
-                return beta;
+                return beta
             if (score > alpha)
-                alpha = score;
+                alpha = score
         }
         return alpha
     }

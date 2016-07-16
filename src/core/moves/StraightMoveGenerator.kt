@@ -9,7 +9,7 @@ abstract class StraightMoveGenerator : PieceMoveGenerator() {
     private val shiftUp = ShiftUpStrategy()
     private val shiftDown = ShiftDownStrategy()
 
-    protected abstract val pieceType: Int
+    protected abstract val pieceType: Byte
 
     private fun makeBoardThreats(bitBoard: BitBoard, source: Long, destinations: Long, distance: Int,
                                  alreadyInCheck: Boolean, safeFromCheck: Boolean, rv: MutableList<BitBoardMove>, ss: ShiftStrategy) {
@@ -33,7 +33,7 @@ abstract class StraightMoveGenerator : PieceMoveGenerator() {
                 bbMove = BitBoard.generateCapture(
                         source, moveTo, player, pieceType, bitBoard.getPiece(moveTo))
             } else {
-                bbMove = BitBoard.generateMove(source, moveTo, player.toInt(), pieceType.toInt())
+                bbMove = BitBoard.generateMove(source, moveTo, player, pieceType)
             }
 
             bitBoard.makeMove(bbMove)
@@ -67,7 +67,7 @@ abstract class StraightMoveGenerator : PieceMoveGenerator() {
                 bbMove = BitBoard.generateCapture(
                         source, moveTo, player, pieceType, bitBoard.getPiece(moveTo))
             } else {
-                bbMove = BitBoard.generateMove(source, moveTo, player.toInt(), pieceType.toInt())
+                bbMove = BitBoard.generateMove(source, moveTo, player, pieceType)
             }
 
             if (safeFromCheck) {

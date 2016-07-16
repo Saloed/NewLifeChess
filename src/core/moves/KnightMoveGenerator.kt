@@ -21,7 +21,7 @@ class KnightMoveGenerator : PieceMoveGenerator() {
             if (nextMove and bitBoard.getBitmapOppColor(player) != 0L) {
                 bbMove = BitBoard.generateCapture(pieceMap, nextMove, player, Piece.KNIGHT, bitBoard.getPiece(nextMove))
             } else {
-                bbMove = BitBoard.generateMove(pieceMap, nextMove, player.toInt(), Piece.KNIGHT.toInt())
+                bbMove = BitBoard.generateMove(pieceMap, nextMove, player, Piece.KNIGHT)
             }
 
             if (safeFromCheck) {

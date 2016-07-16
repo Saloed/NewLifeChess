@@ -13,7 +13,7 @@ class KnightEvaluator : PositionEvaluator {
         return score
     }
 
-    private fun scoreKnights(bitBoard: BitBoard, color: Int): Int {
+    private fun scoreKnights(bitBoard: BitBoard, color: Byte): Int {
         var score = 0
 
         val enemyPawns = bitBoard.getBitmapOppColor(color) and bitBoard.bitmapPawns

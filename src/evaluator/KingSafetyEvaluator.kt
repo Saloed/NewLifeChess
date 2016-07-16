@@ -13,7 +13,7 @@ class KingSafetyEvaluator : PositionEvaluator {
         return score
     }
 
-    private fun scoreSafety(bitBoard: BitBoard, color: Int): Int {
+    private fun scoreSafety(bitBoard: BitBoard, color: Byte): Int {
 
         if ((bitBoard.getBitmapOppColor(color) or bitBoard.bitmapQueens) == 0L) {
             // Fairly crude endgame test...

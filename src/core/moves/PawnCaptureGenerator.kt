@@ -47,12 +47,12 @@ class PawnCaptureGenerator : PieceMoveGenerator() {
         }
     }
 
-    private fun tryCaptures(bitBoard: BitBoard, player: Int, nextPiece: Long,
+    private fun tryCaptures(bitBoard: BitBoard, player: Byte, nextPiece: Long,
                             captured: Long, epLocation: Long, alreadyInCheck: Boolean, safeFromCheck: Boolean, rv: MutableList<BitBoardMove>) {
 
         val bbMove: BitBoardMove
         if (captured == epLocation) {
-            bbMove = BitBoard.generateEnPassantCapture(nextPiece, captured, player.toInt())
+            bbMove = BitBoard.generateEnPassantCapture(nextPiece, captured, player)
         } else {
             bbMove = BitBoard.generateCapture(
                     nextPiece, captured, player, Piece.PAWN, bitBoard.getPiece(captured))
@@ -63,13 +63,13 @@ class PawnCaptureGenerator : PieceMoveGenerator() {
                 rv.add(bbMove)
             } else {
                 rv.add(BitBoard.generateCaptureAndPromote(
-                        nextPiece, captured, player.toInt(), bitBoard.getPiece(captured), Piece.QUEEN))
+                        nextPiece, captured, player, bitBoard.getPiece(captured), Piece.QUEEN))
                 rv.add(BitBoard.generateCaptureAndPromote(
-                        nextPiece, captured, player.toInt(), bitBoard.getPiece(captured), Piece.ROOK))
+                        nextPiece, captured, player, bitBoard.getPiece(captured), Piece.ROOK))
                 rv.add(BitBoard.generateCaptureAndPromote(
-                        nextPiece, captured, player.toInt(), bitBoard.getPiece(captured), Piece.BISHOP))
+                        nextPiece, captured, player, bitBoard.getPiece(captured), Piece.BISHOP))
                 rv.add(BitBoard.generateCaptureAndPromote(
-                        nextPiece, captured, player.toInt(), bitBoard.getPiece(captured), Piece.KNIGHT))
+                        nextPiece, captured, player, bitBoard.getPiece(captured), Piece.KNIGHT))
             }
         } else {
             bitBoard.makeMove(bbMove)
@@ -81,13 +81,13 @@ class PawnCaptureGenerator : PieceMoveGenerator() {
                     rv.add(bbMove)
                 } else {
                     rv.add(BitBoard.generateCaptureAndPromote(
-                            nextPiece, captured, player.toInt(), bitBoard.getPiece(captured), Piece.QUEEN))
+                            nextPiece, captured, player, bitBoard.getPiece(captured), Piece.QUEEN))
                     rv.add(BitBoard.generateCaptureAndPromote(
-                            nextPiece, captured, player.toInt(), bitBoard.getPiece(captured), Piece.ROOK))
+                            nextPiece, captured, player, bitBoard.getPiece(captured), Piece.ROOK))
                     rv.add(BitBoard.generateCaptureAndPromote(
-                            nextPiece, captured, player.toInt(), bitBoard.getPiece(captured), Piece.BISHOP))
+                            nextPiece, captured, player, bitBoard.getPiece(captured), Piece.BISHOP))
                     rv.add(BitBoard.generateCaptureAndPromote(
-                            nextPiece, captured, player.toInt(), bitBoard.getPiece(captured), Piece.KNIGHT))
+                            nextPiece, captured, player, bitBoard.getPiece(captured), Piece.KNIGHT))
                 }
             } else {
                 bitBoard.unmakeMove(bbMove)

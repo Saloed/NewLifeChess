@@ -12,7 +12,7 @@ class RookEvaluator : PositionEvaluator {
         return score
     }
 
-    private fun scoreRooks(bitBoard: BitBoard, color: Int): Int {
+    private fun scoreRooks(bitBoard: BitBoard, color: Byte): Int {
         var score = 0
 
         var rookMap = bitBoard.getBitmapColor(color) and bitBoard.bitmapRooks

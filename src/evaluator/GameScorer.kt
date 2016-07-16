@@ -21,14 +21,11 @@ class GameScorer {
         //		println("score(" + alpha + ","+beta+")");
         val result = bitBoard.stalemate
 
-        if (result === BitBoard.RES_DRAW) {
-            return 0
-        }
+        if (result === BitBoard.RES_DRAW) return 0
 
-        if (result === BitBoard.RES_BLACK_WIN || result === BitBoard.RES_WHITE_WIN) {
+        if (result === BitBoard.RES_BLACK_WIN
+                || result === BitBoard.RES_WHITE_WIN)
             return MATE_SCORE
-        }
-
 
         var score = 0
 

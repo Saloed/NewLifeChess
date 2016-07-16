@@ -13,7 +13,7 @@ class BishopMobilityEvaluator : PositionEvaluator {
         return score
     }
 
-    private fun getScore(bitBoard: BitBoard, color: Int): Int {
+    private fun getScore(bitBoard: BitBoard, color: Byte): Int {
         var bishopMap = bitBoard.getBitmapColor(color) and bitBoard.bitmapBishops
         var score = 0
 

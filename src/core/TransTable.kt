@@ -2,15 +2,16 @@ package core
 
 import model.Piece
 import java.util.*
+import util.*
 
 data class TTEntry(val value: Int, val depth: Int)
 
-class TransTable(val capasity: Int) {
-    val table = HashMap<Long, TTEntry>(capasity, 0.95f)
+class TransTable(val capacity: Int) {
+    val table = HashMap<Long, TTEntry>(capacity, 0.95f)
 
     fun put(board: BitBoard, entry: TTEntry) = table.put(board.zobristHash(), entry)
 
-    fun get(board: BitBoard) = table.get(board.zobristHash())
+    fun get(board: BitBoard) = table[board.zobristHash()]
 
     fun clear() = table.clear()
 

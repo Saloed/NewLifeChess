@@ -39,7 +39,7 @@ fun main(arg: Array<String>) {
 
     var start = 0L
     var decisionTime = 0L
-    var turn = 0;
+    var turn = 0
     println("Responsiveness test")
     while (decisionTime < 25000 && turn < 20) {
         start = System.currentTimeMillis()
