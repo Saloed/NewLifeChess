@@ -3,6 +3,12 @@ import core.moves.MoveGenerator
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import uci.FENParser
+import java.io.File
+import java.io.FileNotFoundException
+import java.util.*
+import java.util.concurrent.Callable
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
 class MoveTest {
 
@@ -67,24 +73,77 @@ class MoveTest {
         }
     }
 
-    private fun generateToDepth(depth: Int, bitBoard: BitBoard): Int {
+    fun executeBoard(board: BitBoard, expect: LongArray, toDepth: Int = expect.lastIndex, fen: String = "", index: Int = 0) {
+        for (x in 0..toDepth) {
+            assertEquals("$index | $fen ", expect[x], generateToDepth(x + 1, board))
+        }
+    }
+
+    private fun generateToDepth(depth: Int, bitBoard: BitBoard): Long {
         if (depth == 1) {
-            return MoveGenerator(bitBoard).allRemainingMoves.size
+            return MoveGenerator(bitBoard).allRemainingMoves.size.toLong()
         }
 
-        var count = 0
-        val moveItr = MoveGenerator(bitBoard)
-        while (moveItr.hasNext()) {
-            val move = moveItr.next()
+        var count = 0L
+        val moves = MoveGenerator(bitBoard).allRemainingMoves
+        moves.forEach {
             val x = bitBoard.flags
             val cs = bitBoard.checksum
-            bitBoard.makeMove(move)
+            bitBoard.makeMove(it)
             count += generateToDepth(depth - 1, bitBoard)
-            bitBoard.unmakeMove(move)
+            bitBoard.unmakeMove(it)
             if (x != bitBoard.flags || cs != bitBoard.checksum) {
                 throw IllegalStateException("make/unmake caused differences")
             }
         }
         return count
     }
+}
+
+fun String.input(): Scanner {
+    val file = File(this)
+    if (!file.isFile) throw FileNotFoundException(file.absolutePath)
+    return Scanner(file, "windows-1251")
+}
+
+fun main(arg: Array<String>) {
+    val fileName = "test/perftsuite.epd"
+    val input = fileName.input()
+    val testSuite = LinkedList<List<String>>()
+    val checkValues = LinkedList<LongArray>()
+    while (input.hasNextLine()) {
+        val line = input.nextLine()
+        if (line == "") continue
+        testSuite.add(line.split(';'))
+    }
+    input.close()
+
+    testSuite.forEach {
+        val values = LongArray(6)
+        var count = 0
+        for (i in 1..it.lastIndex) {
+            val str = it[i].split(' ')
+            values[count] = java.lang.Long.parseLong(str[1])
+            count++
+        }
+        checkValues.add(values)
+    }
+    val test = MoveTest()
+    //skip first because they are too long
+    val executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
+    val result = LinkedList<Future<String>>()
+    for (i in 2..testSuite.lastIndex) {
+        result.add(executor.submit(Callable<String> {
+            val board = BitBoard()
+            FENParser.loadPosition(testSuite[i][0], board)
+            try {
+                test.executeBoard(board, checkValues[i], 5, testSuite[i][0], i)
+                return@Callable ("$i -> passed")
+            } catch (e: AssertionError) {
+                return@Callable ("$i -> unpassed " + e.toString())
+            }
+        }))
+    }
+    result.map { println(it.get()) }
+    executor.shutdown()
 }
