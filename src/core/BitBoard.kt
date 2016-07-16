@@ -4,12 +4,12 @@ import core.moves.MoveGenerator
 import core.moves.ShiftStrategy
 import model.Piece
 import java.util.*
-
+import util.*
 
 class BitBoard {
 
     private var bitmaps = LongArray(9)
-    var player: Int = 0
+    var player: Byte = Piece.WHITE
     var flags: Int = 0
         private set
 
@@ -40,14 +40,14 @@ class BitBoard {
     /**
      * set a piece on a square.
      */
-    fun setPiece(file: Int, rank: Int, piece: Int) {
+    fun setPiece(file: Int, rank: Int, piece: Byte) {
         val pos: Long = (1L shl (rank shl 3)) shl file
         bitmaps[piece and Piece.MASK_TYPE] = bitmaps[piece and Piece.MASK_TYPE] or pos
         bitmaps[piece and Piece.MASK_COLOR] = bitmaps[piece and Piece.MASK_COLOR] or pos
         invalidateHistory()
     }
 
-    fun setNewPlayer(player: Int) {
+    fun setNewPlayer(player: Byte) {
         this.player = player
         invalidateHistory()
     }
@@ -108,7 +108,7 @@ class BitBoard {
     val enPassantRank: Int
         get() = if (getCurrentPlayer() == Piece.WHITE) 5 else 2
 
-    fun getCurrentPlayer(): Int {
+    fun getCurrentPlayer(): Byte {
         return (player and Piece.BLACK)
     }
 
@@ -155,14 +155,14 @@ class BitBoard {
     val bitmapColor: Long
         get() = bitmaps[player]
 
-    fun getBitmapColor(color: Int): Long {
+    fun getBitmapColor(color: Byte): Long {
         return if (color == Piece.WHITE) bitmapWhite else bitmapBlack
     }
 
     val bitmapOppColor: Long
         get() = bitmaps[player xor Piece.BLACK]
 
-    fun getBitmapOppColor(color: Int): Long {
+    fun getBitmapOppColor(color: Byte): Long {
         return if (color == Piece.WHITE) bitmapBlack else bitmapWhite
     }
 
@@ -217,20 +217,20 @@ class BitBoard {
                 || java.lang.Long.bitCount(minorMap and bitmaps[MAP_WHITE]) > 1)
     }
 
-    fun getPiece(pos: Long): Int {
-        val value = (java.lang.Long.rotateLeft(bitmaps[MAP_PAWNS] and pos, MAP_PAWNS)
-                or java.lang.Long.rotateLeft(bitmaps[MAP_KNIGHTS] and pos, MAP_KNIGHTS)
-                or java.lang.Long.rotateLeft(bitmaps[MAP_BISHOPS] and pos, MAP_BISHOPS)
-                or java.lang.Long.rotateLeft(bitmaps[MAP_ROOKS] and pos, MAP_ROOKS)
-                or java.lang.Long.rotateLeft(bitmaps[MAP_QUEENS] and pos, MAP_QUEENS)
-                or java.lang.Long.rotateLeft(bitmaps[MAP_KINGS] and pos, MAP_KINGS))
+    fun getPiece(pos: Long): Byte {
+        val value = (cshl(bitmaps[MAP_PAWNS] and pos, MAP_PAWNS)
+                or cshl(bitmaps[MAP_KNIGHTS] and pos, MAP_KNIGHTS)
+                or cshl(bitmaps[MAP_BISHOPS] and pos, MAP_BISHOPS)
+                or cshl(bitmaps[MAP_ROOKS] and pos, MAP_ROOKS)
+                or cshl(bitmaps[MAP_QUEENS] and pos, MAP_QUEENS)
+                or cshl(bitmaps[MAP_KINGS] and pos, MAP_KINGS))
         if (value == 0L) {
             return Piece.EMPTY
         }
-        return (java.lang.Long.numberOfTrailingZeros(value) - java.lang.Long.numberOfTrailingZeros(pos) and 0x07)
+        return (java.lang.Long.numberOfTrailingZeros(value) - java.lang.Long.numberOfTrailingZeros(pos) and 0x07).toByte()
     }
 
-    fun getColor(pos: Long): Int {
+    fun getColor(pos: Long): Byte {
         //var piece = getPiece(pos)
         if ((bitmaps[MAP_BLACK] and pos) != 0L) {
             return Piece.BLACK
@@ -261,7 +261,7 @@ class BitBoard {
                 bitmaps[MAP_ROOKS] = bitmaps[MAP_ROOKS] xor 648518346341351424L
             }
         }
-        flags = flags and move.castleOff.inv()
+        flags = flags and move.castleOff.toInt().inv()
 
         hash = hash xor ZHash.castle[move.castleDir]
         hash = hash xor ZHash.castle[flags and CASTLE_MASK]
@@ -309,7 +309,7 @@ class BitBoard {
         } else {
             flags = flags and EN_PASSANT_MASK.inv()
         }
-        flags = flags and move.castleOff.inv()
+        flags = flags and move.castleOff.toInt().inv()
 
         hash = hash xor ZHash.squares[if (move.colorIndex == Piece.WHITE) 0 else 1][move.pieceIndex][toCoord(move.toSquare)]
 
@@ -350,18 +350,18 @@ class BitBoard {
         //this.move = move.previousMove
     }
 
-    val cacheId: String
-        get() {
-            val c = CharArray(17)
-            var i = 0
-            while (i < 64) {
-                c[i / 4] = (c[i / 4].toInt() or (getPiece(1L shl i) shl 12 or getPiece(1L shl i + 1) shl 8 or
-                        getPiece(1L shl i + 2) shl 4 or getPiece(1L shl i + 3))).toChar()
-                i += 4
-            }
-            c[16] = (c[16].toInt() or (flags or (player shl 8))).toChar()
-            return String(c)
-        }
+//    val cacheId: String
+//        get() {
+//            val c = CharArray(17)
+//            var i = 0
+//            while (i < 64) {
+//                c[i / 4] = (c[i / 4].toInt() or (getPiece(1L shl i) shl 12 or getPiece(1L shl i + 1) shl 8 or
+//                        getPiece(1L shl i + 2) shl 4 or getPiece(1L shl i + 3))).toChar()
+//                i += 4
+//            }
+//            c[16] = (c[16].toInt() or (flags or (player shl 8))).toChar()
+//            return String(c)
+//        }
 
     val checksum: Long
         get() {
@@ -490,25 +490,27 @@ class BitBoard {
             return generateDoubleAdvanceMove(from, to, player)
         }
         if (piece == Piece.PAWN && to and FINAL_RANKS != 0L) {
-            var promoTo: Int = 0
+            var promoTo: Byte = 0
             when (move[move.length - 1]) {
                 'Q' -> promoTo = Piece.QUEEN
                 'R' -> promoTo = Piece.ROOK
                 'N' -> promoTo = Piece.KNIGHT
                 'B' -> promoTo = Piece.BISHOP
             }
-            if (pieceCap != 0) {
+            if (pieceCap != ZERO) {
                 return generateCaptureAndPromote(from, to, player, pieceCap, promoTo)
             } else {
                 return generatePromote(from, to, player, promoTo)
             }
         }
 
-        if (piece == Piece.PAWN && Math.abs(java.lang.Long.numberOfTrailingZeros(from) - java.lang.Long.numberOfTrailingZeros(to)) != 8 && pieceCap == 0) {
+        if (piece == Piece.PAWN
+                && Math.abs(java.lang.Long.numberOfTrailingZeros(from) - java.lang.Long.numberOfTrailingZeros(to)) != 8
+                && pieceCap == ZERO) {
             return generateEnPassantCapture(from, to, player)
         }
 
-        if (pieceCap != 0) {
+        if (pieceCap != ZERO) {
             return generateCapture(from, to, player, piece, getPiece(to))
         } else {
             return generateMove(from, to, player, piece)
@@ -520,18 +522,18 @@ class BitBoard {
      */
     class BitBoardMove {
 
-        var id: Int = -1  //help identify moves after sort (TestEngine)
+        // var id: Int = -1  //help identify moves after sort (TestEngine)
 
-        var colorIndex: Int = 0
-        var pieceIndex: Int = 0
+        var colorIndex: Byte = 0
+        var pieceIndex: Byte = 0
 
         //type of piece to capture (pawn, knight etc.)
-        var captureType: Int = 0
-        var promoteTo: Int = 0
+        var captureType: Byte = 0
+        var promoteTo: Byte = 0
         var captureSquare: Long = 0
         var toSquare: Long = 0
         var fromSquare: Long = 0
-        var castleDir: Int = 0
+        var castleDir: Byte = 0
         var epFile: Int = 0
 
         var flags: Int = 0
@@ -541,13 +543,13 @@ class BitBoard {
         var promote = false
         var castle = false
         var enpassant = false
-        var castleOff: Int = 0
+        var castleOff: Byte = 0
         var halfMoveCount: Int = 0
         // lateinit var previousMove: BitBoardMove
 
         var score: Int = 0
 
-        constructor(castleDir: Int) {
+        constructor(castleDir: Byte) {
             this.castle = true
             this.castleDir = castleDir
             if (castleDir == CASTLE_WKS || castleDir == CASTLE_WQS) {
@@ -570,7 +572,7 @@ class BitBoard {
             }
         }
 
-        constructor(fromSquare: Long, toSquare: Long, colorIndex: Int, pieceIndex: Int) {
+        constructor(fromSquare: Long, toSquare: Long, colorIndex: Byte, pieceIndex: Byte) {
             this.fromSquare = fromSquare
             this.toSquare = toSquare
             this.colorIndex = colorIndex
@@ -591,7 +593,7 @@ class BitBoard {
             }
         }
 
-        constructor(fromSquare: Long, toSquare: Long, colorIndex: Int, pieceIndex: Int, captureType: Int)
+        constructor(fromSquare: Long, toSquare: Long, colorIndex: Byte, pieceIndex: Byte, captureType: Byte)
         : this(fromSquare, toSquare, colorIndex, pieceIndex) {
             this.captureType = captureType
             this.isCapture = true
@@ -694,15 +696,15 @@ class BitBoard {
         private val MAP_QUEENS = Piece.QUEEN
         private val MAP_KINGS = Piece.KING
 
-        val CASTLE_WQS: Int = 0x01
-        val CASTLE_WKS: Int = 0x02
-        val CASTLE_BQS: Int = 0x04
-        val CASTLE_BKS: Int = 0x08
+        val CASTLE_WQS: Byte = 0x01
+        val CASTLE_WKS: Byte = 0x02
+        val CASTLE_BQS: Byte = 0x04
+        val CASTLE_BKS: Byte = 0x08
         private val IS_EN_PASSANT = 0x10
         private val EN_PASSANT_MASK = 0xF0
         private val CASTLE_MASK: Int = 0x0F
 
-        fun getShiftStrategy(colour: Int): ShiftStrategy {
+        fun getShiftStrategy(colour: Byte): ShiftStrategy {
             return if (colour == Piece.WHITE) ShiftStrategy.WHITE else ShiftStrategy.BLACK
         }
 
@@ -772,12 +774,12 @@ class BitBoard {
         fun toCoord(square: Long) = java.lang.Long.numberOfTrailingZeros(square)
 
         fun generateMove(
-                fromSquare: Long, toSquare: Long, colorIndex: Int, pieceIndex: Int): BitBoardMove {
+                fromSquare: Long, toSquare: Long, colorIndex: Byte, pieceIndex: Byte): BitBoardMove {
             return BitBoardMove(fromSquare, toSquare, colorIndex, pieceIndex)
         }
 
         fun generateDoubleAdvanceMove(
-                fromSquare: Long, toSquare: Long, colorIndex: Int): BitBoardMove {
+                fromSquare: Long, toSquare: Long, colorIndex: Byte): BitBoardMove {
             val move = BitBoardMove(fromSquare, toSquare, colorIndex, Piece.PAWN)
             move.enpassant = true
             move.epFile = (java.lang.Long.numberOfTrailingZeros(fromSquare) and 0x07 shl 5 or IS_EN_PASSANT)
@@ -785,19 +787,19 @@ class BitBoard {
         }
 
         fun generateCapture(
-                fromSquare: Long, toSquare: Long, colorIndex: Int, pieceIndex: Int, captureType: Int): BitBoardMove {
+                fromSquare: Long, toSquare: Long, colorIndex: Byte, pieceIndex: Byte, captureType: Byte): BitBoardMove {
             return BitBoardMove(fromSquare, toSquare, colorIndex, pieceIndex, captureType)
         }
 
         private fun generatePromote(
-                fromSquare: Long, toSquare: Long, colorIndex: Int, promoteTo: Int): BitBoardMove {
+                fromSquare: Long, toSquare: Long, colorIndex: Byte, promoteTo: Byte): BitBoardMove {
             val move = BitBoardMove(fromSquare, toSquare, colorIndex, Piece.PAWN)
             move.promote = true
             move.promoteTo = promoteTo
             return move
         }
 
-        fun generatePromotions(fromSquare: Long, toSquare: Long, colorIndex: Int): List<BitBoardMove> {
+        fun generatePromotions(fromSquare: Long, toSquare: Long, colorIndex: Byte): List<BitBoardMove> {
             val moves = arrayOfNulls<BitBoardMove>(4)
             moves[0] = generatePromote(fromSquare, toSquare, colorIndex, Piece.QUEEN)
             moves[1] = generatePromote(fromSquare, toSquare, colorIndex, Piece.KNIGHT)
@@ -807,7 +809,7 @@ class BitBoard {
         }
 
         fun generateCaptureAndPromote(
-                fromSquare: Long, toSquare: Long, colorIndex: Int, captureType: Int, promoteTo: Int): BitBoardMove {
+                fromSquare: Long, toSquare: Long, colorIndex: Byte, captureType: Byte, promoteTo: Byte): BitBoardMove {
             val move = BitBoardMove(fromSquare, toSquare, colorIndex, Piece.PAWN, captureType)
             move.promote = true
             move.promoteTo = promoteTo
@@ -815,13 +817,13 @@ class BitBoard {
         }
 
         fun generateEnPassantCapture(
-                fromSquare: Long, toSquare: Long, colorIndex: Int): BitBoardMove {
+                fromSquare: Long, toSquare: Long, colorIndex: Byte): BitBoardMove {
             val move = BitBoardMove(fromSquare, toSquare, colorIndex, Piece.PAWN, Piece.PAWN)
             move.captureSquare = if (colorIndex == Piece.WHITE) toSquare.ushr(8) else toSquare shl 8
             return move
         }
 
-        fun generateCastling(castleDir: Int): BitBoardMove {
+        fun generateCastling(castleDir: Byte): BitBoardMove {
             return BitBoardMove(castleDir)
         }
 

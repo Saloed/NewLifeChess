@@ -22,10 +22,15 @@ public class Operation {
         arr[index] = value;
     }
 
+    public static long rotateLeft(long i, byte distance) {
+        return (i << distance) | (i >>> -distance);
+    }
+
     public static native byte and(byte a, byte b);
 
     public static native byte or(byte a, byte b);
 
     public static native byte xor(byte a, byte b);
 
+    // public static native byte not(byte a);
 }

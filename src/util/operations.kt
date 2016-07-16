@@ -3,9 +3,17 @@ package util
 operator fun LongArray.get(index: Byte) = Operation.get(this, index)
 operator fun LongArray.set(index: Byte, value: Long) = Operation.set(this, index, value)
 
+operator fun <T> Array<T>.get(index: Byte) = Operation.get(this, index)
+operator fun <T> Array<T>.set(index: Byte, value: T) = Operation.set(this, index, value)
+
 infix fun Byte.and(other: Byte) = Operation.and(this, other)
 infix fun Byte.or(other: Byte) = Operation.or(this, other)
 infix fun Byte.xor(other: Byte) = Operation.xor(this, other)
+//fun Byte.inv() = Operation.not(this)
+
+fun cshl(value: Long, shift: Byte) = Operation.rotateLeft(value, shift)
+
+const val ZERO: Byte = 0
 
 //fun main(arg: Array<String>) {
 ////    val b: Byte = 5
