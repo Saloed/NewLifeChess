@@ -140,7 +140,7 @@ fun main(arg: Array<String>) {
     //skip first because they are too long
     val executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
     val result = LinkedList<Future<String>>()
-    for (i in 2..testSuite.lastIndex) {
+    for (i in 0..testSuite.lastIndex) {
         result.add(executor.submit(Callable<String> {
             val board = BitBoard()
             FENParser.loadPosition(testSuite[i][0], board)

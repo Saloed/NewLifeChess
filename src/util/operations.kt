@@ -21,9 +21,9 @@ fun cshl(value: Long, shift: Byte) = Operation.rotateLeft(value, shift)
 const val ZERO: Byte = 0
 val F0: Byte = 0b01110000.toByte() or ((1 shl 7).toByte())
 
-fun main(arg: Array<String>) {
-    val t1: Byte = 63
-    val t2: Byte = 64
-
-    println(t2 shr 1)
-}
+//fun main(arg: Array<String>) {
+//    val t1: Byte = 63
+//    val t2: Byte = -128
+//
+//    println(t2 ushr 1)
+//}

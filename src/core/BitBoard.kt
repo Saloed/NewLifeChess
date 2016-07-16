@@ -302,7 +302,7 @@ class BitBoard {
         }
         if (move.enpassant) {
             flags = flags and EN_PASSANT_MASK.inv()
-            flags = flags or move.epFile.toByte()
+            flags = flags or move.epFile
 
             hash = hash xor ZHash.enPassant[toCoord(move.toSquare)]
 
@@ -534,7 +534,7 @@ class BitBoard {
         var toSquare: Long = 0
         var fromSquare: Long = 0
         var castleDir: Byte = 0
-        var epFile: Int = 0
+        var epFile: Byte = 0
 
         var flags: Byte = 0
 
@@ -782,7 +782,7 @@ class BitBoard {
                 fromSquare: Long, toSquare: Long, colorIndex: Byte): BitBoardMove {
             val move = BitBoardMove(fromSquare, toSquare, colorIndex, Piece.PAWN)
             move.enpassant = true
-            move.epFile = (java.lang.Long.numberOfTrailingZeros(fromSquare) and 0x07 shl 5 or IS_EN_PASSANT.toInt())
+            move.epFile = (java.lang.Long.numberOfTrailingZeros(fromSquare) and 0x07 shl 5).toByte() or IS_EN_PASSANT
             return move
         }
 
