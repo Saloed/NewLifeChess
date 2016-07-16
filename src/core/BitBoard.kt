@@ -18,7 +18,6 @@ class BitBoard {
         private set
     //   private lateinit var move: BitBoardMove
 
-    //TODO: hash update
     private var hash: Long = 0
 
     var castlingOptions: Int
