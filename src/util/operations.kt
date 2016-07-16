@@ -11,9 +11,9 @@ infix fun Byte.or(other: Byte) = Operation.or(this, other)
 infix fun Byte.xor(other: Byte) = Operation.xor(this, other)
 fun Byte.inv() = Operation.not(this)
 
-infix fun Byte.shl(shift: Byte) = Operation.shl(shift)
-infix fun Byte.shr(shift: Byte) = Operation.shr(shift)
-infix fun Byte.ushr(shift: Byte) = Operation.ushr(shift)
+infix fun Byte.shl(shift: Byte) = Operation.shl(this, shift)
+infix fun Byte.shr(shift: Byte) = Operation.shr(this, shift)
+infix fun Byte.ushr(shift: Byte) = Operation.ushr(this, shift)
 
 
 fun cshl(value: Long, shift: Byte) = Operation.rotateLeft(value, shift)

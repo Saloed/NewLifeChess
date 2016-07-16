@@ -34,16 +34,16 @@ public class Operation {
 
     public static native byte not(byte a);
 
-    public static native byte shl(byte shift);
+    public static native byte shl(byte arg, byte shift);
 
-    public static native byte shl(int shift);
+    public static native byte shl(byte arg, int shift);
 
-    public static native byte shr(byte shift);
+    public static native byte shr(byte arg, byte shift);
 
-    public static native byte shr(int shift);
+    public static native byte shr(byte arg, int shift);
 
-    public static native byte ushr(byte shift);
+    public static native byte ushr(byte arg, byte shift);
 
-    public static native byte ushr(int shift);
+    public static native byte ushr(byte arg, int shift);
 
 }
